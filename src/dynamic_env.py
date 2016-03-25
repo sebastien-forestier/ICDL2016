@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+#matplotlib.use('QT4Agg')
 
 from dmp import DmpPrimitive
 from explauto.utils.utils import bounds_min_max
@@ -31,10 +33,12 @@ class DynamicEnvironment(Environment):
         self.optim_end_position = optim_end_position
         self.gui = gui
         if self.gui:
+            plt.ion()
             self.ax = plt.subplot()
             plt.gcf().set_size_inches(12., 12., forward=True)
             plt.gca().set_aspect('equal')
-            plt.show(block=False)
+            #plt.show(block=False)
+            plt.draw()
         
         Environment.__init__(self, m_mins, m_maxs, s_mins, s_maxs)
                 
@@ -108,7 +112,7 @@ class DynamicEnvironment(Environment):
         return m
     
     def compute_sensori_effect(self, m_traj):
-        s = self.env.update(m_traj, log=False)
+        s = self.env.update(m_traj, reset=False, log=False)
         y = np.array(s[:self.move_steps])
         if self.sensori_traj_type == "DMP":
             self.sensori_dmp.dmp.imitate_path(np.transpose(y))
@@ -119,48 +123,65 @@ class DynamicEnvironment(Environment):
             s_ag = list(np.transpose(w).flatten())
         else:
             raise NotImplementedError  
-        s = s_ag + s[self.move_steps:] 
+        s = s_ag
         if self.gui:
             #if abs(s[11] - (-0.85)) > 0.1: #Tool1
             #if s[-2] > 0: # One of the boxes
-            self.plot()
+            if abs(s[-1] - 0.8) > 0.01:
+            #if np.random.rand() < 0.01:
+                self.plot()
         return bounds_min_max(s, self.conf.s_mins, self.conf.s_maxs)    
         
-    def update(self, m_ag, reset=False, log=False):
-        return Environment.update(self, m_ag, reset=True, log=log)
+    def update(self, m_ag, reset=True, log=False):
+        if reset:
+            self.reset()
+        if len(np.array(m_ag).shape) == 1:
+            s = self.one_update(m_ag, log)
+        else:
+            s = []
+            for m in m_ag:
+                s.append(self.one_update(m, log))
+            s = np.array(s)
+        return s
         
     def plot(self, **kwargs):
-        l = [0, 16, 32, 49]
-        for i in range(1,len(l)):
-            plt.cla()
-            for j in range(l[i-1]+1, l[i]-1, 5):
-                self.env.plot(self.ax, j, alpha=0.2)
-            self.env.plot(self.ax, l[i], **kwargs)
-            plt.xlim([-1.6, 1.6])
-            plt.ylim([-0.2, 1.6])
-            self.ax.set_xticklabels([])
-            self.ax.set_yticklabels([])
-            plt.gca().yaxis.set_major_locator(plt.NullLocator())
-            plt.gca().yaxis.set_major_locator(plt.NullLocator())
-            plt.draw()
-            if True:
-                plt.savefig('/home/sforesti/scm/PhD/cogsci2016/include/test-mvt-' + str(l[i]) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
-#         for i in range(self.move_steps):
+#         l = [0, 16, 32, 49]
+#         for i in range(1,len(l)):
 #             plt.cla()
-#             self.env.plot(self.ax, i, **kwargs)
-# #             plt.xlim([-1.3, 1.3])
-# #             plt.ylim([-0.2, 1.6])
+#             for j in range(l[i-1]+1, l[i]-1, 5):
+#                 self.env.plot(self.ax, j, alpha=0.2)
+#             self.env.plot(self.ax, l[i], **kwargs)
 #             plt.xlim([-1.6, 1.6])
-#             plt.ylim([-0.5, 1.6])
-# #             plt.gca().set_xticklabels([])
-# #             plt.gca().set_yticklabels([])
-# #             plt.gca().yaxis.set_major_locator(plt.NullLocator())
-# #             plt.gca().yaxis.set_major_locator(plt.NullLocator())
-# #             plt.xlabel("")
-# #             plt.ylabel("")
+#             plt.ylim([-0.2, 1.6])
+#             self.ax.set_xticklabels([])
+#             self.ax.set_yticklabels([])
+#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
+#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
 #             plt.draw()
 #             if False:
-#                 if i in [16, 32, 49]:
-#                     plt.savefig('/home/sforesti/scm/PhD/cogsci2016/include/test-mvt-' + str(i) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
+#                 plt.savefig('/home/sforesti/scm/PhD/cogsci2016/include/test-mvt-' + str(l[i]) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
+        for i in range(self.move_steps):
+            plt.pause(0.0001)
+            plt.cla()
+            self.env.plot(self.ax, i, **kwargs)
+            plt.xlim([-1.6, 1.6])
+            plt.ylim([-0.5, 1.6])
+#             plt.xlim([-1.3, 1.3])
+#             plt.ylim([-0.2, 1.6])
+#             plt.xlim([-1.6, 1.6])
+#             plt.ylim([-0.5, 1.6])
+#             plt.gca().set_xticklabels([])
+#             plt.gca().set_yticklabels([])
+#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
+#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
+#             plt.xlabel("")
+#             plt.ylabel("")
+            plt.draw()
+            plt.show(block=False)
+            if False:
+                if i in [16, 32, 49]:
+                    plt.savefig('/home/sforesti/scm/PhD/iros2016/include/test-mvt-' + str(i) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
+        #plt.show()
         #time.sleep(1)
+        
 

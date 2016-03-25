@@ -6,6 +6,9 @@ from explauto.environment.environment import Environment
 class CombinedEnvironment(Environment):
     
     def __init__(self, s_mins, s_maxs, envs_cls, envs_cfg, combined_s):
+        
+#         print envs_cls
+#         print envs_cfg
         self.envs = [cls(**cfg) for cls,cfg in zip(envs_cls, envs_cfg)]
         self.n_envs = len(self.envs)
         self.n_params_envs = [len(env.conf.m_dims) for env in self.envs]
@@ -36,27 +39,24 @@ class CombinedEnvironment(Environment):
         if len(m.shape) == 1:
             return m[range(dim_beg,dim_beg + self.n_params_envs[i])]
         else:
+            #print m, dim_beg, self.n_params_envs, i
             return m[:,range(dim_beg,dim_beg + self.n_params_envs[i])]
     
     def compute_motor_command(self, m):
+        assert len(m) == self.conf.m_ndims, ((self.envs,m,self.conf.m_ndims))
         #return bounds_min_max(m, self.conf.m_mins, self.conf.m_maxs)
         return m
     
     def compute_sensori_effect(self, m):
         if len(np.array(m).shape) == 1:
-            result = self.combined_s([si for i,env in zip(range(self.n_envs), self.envs) for si in list(env.update(self.get_m_env(m, i), log=False))])
+            result = self.combined_s([si for i,env in zip(range(self.n_envs), self.envs) for si in list(env.update(self.get_m_env(m, i), reset=False, log=False))])
         else:
-            results_envs = [list(env.update(self.get_m_env(m, i), log=False)) for i,env in zip(range(self.n_envs), self.envs)]
+            results_envs = [list(env.update(self.get_m_env(m, i), reset=False, log=False)) for i,env in zip(range(self.n_envs), self.envs)]
             result = []
             for i in range(len(m)):   
                 result.append(self.combined_s([si for env_results in results_envs for si in env_results[i]]))
+        assert len(result) == self.conf.s_ndims
         return result
-    
-    def update(self, m, reset=False, log=True, batch=False):
-        if reset:
-            self.reset()
-        s = self.one_update(m, log)
-        return s
     
     def plot(self, ax, i, **kwargs_plot):
         for env in self.envs:
@@ -95,15 +95,16 @@ class HierarchicallyCombinedEnvironment(Environment):
         return self.lower_env.rest_params()
     
     def compute_motor_command(self, m):
+        assert len(m) == self.conf.m_ndims
         #return bounds_min_max(m, self.conf.m_mins, self.conf.m_maxs)
         return m
     
     def compute_sensori_effect(self, m):
         if len(np.array(m).shape) == 1:
-            s_lower = list(self.lower_env.update(self.fun_m_lower(m), log=False))
+            s_lower = list(self.lower_env.update(self.fun_m_lower(m), reset=False, log=False))
             s_lower_upd = self.fun_s_lower(m, s_lower)
         else:
-            results_lower = list(self.lower_env.update(self.fun_m_lower(m), log=False))
+            results_lower = list(self.lower_env.update(self.fun_m_lower(m), reset=False, log=False))
             s_lower = []
             s_lower_upd = []
             if isinstance(results_lower[-1], list):
@@ -114,18 +115,19 @@ class HierarchicallyCombinedEnvironment(Environment):
                 #print "No", isinstance(results_lower[0], list), results_lower[0], results_lower, np.array(results_lower).shape
                 s_lower = results_lower
                 s_lower_upd = self.fun_s_lower(m, s_lower)
-        top_upd = list(self.top_env.update(s_lower_upd))
+        top_upd = list(self.top_env.update(s_lower_upd, reset=False, log=False))
         
         s = self.fun_s_top(m, s_lower, top_upd)
         #print "HC len(s)", len(s), "len(m)", len(m), "len(s_lower)", len(s_lower), "len(top_upd)", len(top_upd)
         
+        assert len(s) == self.conf.s_ndims
         return s
 
-    def update(self, m, reset=False, log=True, batch=False):
-        if reset:
-            self.reset()
-        s = self.one_update(m, log)
-        return s
+#     def update(self, m, reset=False, log=True, batch=False):
+#         if reset:
+#             self.reset()
+#         s = self.one_update(m, log)
+#         return s
     
     def plot(self, ax, i, **kwargs_plot):
         self.lower_env.plot(ax, i, **kwargs_plot)

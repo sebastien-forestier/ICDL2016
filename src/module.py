@@ -21,7 +21,7 @@ class Module(Agent):
         else:
             raise ValueError('Module name must begin with mod')
         #bounds config
-        #print self.mconf['m'], self.mconf['s']
+        #print mid, self.mconf['m'], self.mconf['s']
         self.conf = make_configuration(self.config.agent.mins[self.mconf['m']], 
                                        self.config.agent.maxs[self.mconf['m']], 
                                        self.config.agent.mins[self.mconf['s']],
@@ -29,22 +29,26 @@ class Module(Agent):
         
         #print self.mconf['m'], self.mconf['s'], self.conf
         self.im_dims = self.conf.m_dims if self.mconf['babbling_name'] == 'motor' else self.conf.s_dims        
-        self.im = InterestModel.from_configuration(self.conf, 
-                                                   self.im_dims, 
-                                                   self.mconf['im_name'])
-
+#         self.im = InterestModel.from_configuration(self.conf, 
+#                                                    self.im_dims, 
+#                                                    self.mconf['im_name'])
+        
         self.im_mode = self.mconf["im_mode"]
         self.s = None
         self.sp = None
         self.snn = None
         self.su = None
         
-        sm_cls, kwargs = config.sms[self.mconf['sm_name']]
-        self.sm = sm_cls(self.conf, **kwargs)
+        im_cls, im_kwargs = config.ims[self.mconf['im_name']]
+        im_kwargs['mode'] = self.im_mode
+        self.im = im_cls(self.conf, self.im_dims, **im_kwargs)
+        
+        sm_cls, sm_kwargs = config.sms[self.mconf['sm_name']]
+        self.sm = sm_cls(self.conf, **sm_kwargs)
         #print self.mconf['s'], self.config.agent.s_dims
         #self.s_filter = [self.config.agent.s_dims.index(sd) for sd in self.mconf['s']]
         
-        Agent.__init__(self, self.conf, self.sm, self.im)
+        Agent.__init__(self, self.conf, self.sm, self.im, context_mode=self.mconf['context_mode'])
         
         if self.mconf['from_log'] is not None:
             from_log_dir = self.mconf['from_log'][0]
@@ -128,6 +132,18 @@ class Module(Agent):
         m = self.infer(s_dims, self.conf.m_dims, s, pref='')
         return self.motor_primitive(m)
         
+    def choose(self, context_ms=None):
+        """ Returns a point chosen by the interest model
+        """
+        try:
+            if self.context_mode is None:
+                x = self.interest_model.sample()
+            else:
+                x = np.hstack((context_ms, self.interest_model.sample_given_context(context_ms, range(self.context_mode["context_n_dims"]))))
+        except ExplautoBootstrapError:
+            x = rand_bounds(self.conf.bounds[:, self.expl_dims]).flatten()
+        return x
+    
     def infer(self, expl_dims, inf_dims, x, pref='', mode='sg'):
         """ Use the sensorimotor model to compute the expected value on inf_dims given that the value on expl_dims is x.
 
@@ -148,7 +164,7 @@ class Module(Agent):
             m = rand_bounds(self.conf.bounds[:, inf_dims]).flatten()
         return m
             
-    def produce(self):
+    def produce(self, context_ms=None):
         """ Exploration (see the `Explauto introduction <about.html>`__ for more detail):
 
         * Choose a value x on expl_dims according to the interest model
@@ -161,15 +177,14 @@ class Module(Agent):
         .. note:: This correspond to motor babbling if expl_dims=self.conf.m_dims and inf_dims=self.conf.s_dims 
                     and to goal babbling if expl_dims=self.conf.s_dims and inf_dims=self.conf.m_dims.
         """
-        
         if self.t < self.mconf['motor_babbling_n_iter']:
             self.m = self.motor_babbling()
             self.s = np.zeros(len(self.mconf['s']))
             #print "Motor babbling ", self.mid, self.m
         else:
-            self.x = self.choose_mode()
-            #print "infer y:"
+            self.x = self.choose(context_ms) 
             self.y = self.infer(self.expl_dims, self.inf_dims, self.x)
+            #print "mod produce self.y", self.y
             #print self.expl_dims, self.inf_dims
             #self.m, self.s = self.extract_ms(self.x, self.y)
             self.m, sg = self.extract_ms(self.x, self.y)
@@ -194,7 +209,8 @@ class Module(Agent):
     
     def update_sm(self, m, s):
         #self.emit('perception' + '_' + self.mid, s)
-        self.sensorimotor_model.update(m, s)    
+        self.sensorimotor_model.update(m, s)   
+        self.t += 1 
     
     def update_im(self, m, s):
         #print self.mid, self.s, s
@@ -207,15 +223,6 @@ class Module(Agent):
                 self.emit('im_update_' + self.mid, (hstack((m, self.s)), hstack((m, s)), self.su))
             else:
                 raise NotImplementedError
-    
-    def choose_mode(self):
-        if self.overall_interest > 0 and random.random() < self.top_down_interest / self.overall_interest and not self.top_down_points.empty():
-            print "Top-Down point  ", self.mid
-            return self.top_down_points.get()
-        else:
-            s = self.choose()
-            #print "Goal Babbling ", self.mid, s
-            return s
         
     def competence_pt(self, m): return self.interest_model.competence_pt(m)
     def interest_pt(self, m): return self.interest_model.interest_pt(m)
@@ -234,7 +241,7 @@ class Module(Agent):
                                  self.social_interest)
         return self.overall_interest
 
-    def perceive(self, m, s, has_control = True):
+    def perceive(self, m, s, context=None, has_control=True):
         """ Learning (see the `Explauto introduction <about.html>`__ for more detail):
 
         * update the sensorimotor model with (m, s)
@@ -244,4 +251,3 @@ class Module(Agent):
         self.update_sm(m, s)
         if has_control:
             self.update_im(m, s)
-        self.t += 1

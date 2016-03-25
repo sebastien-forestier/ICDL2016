@@ -2,6 +2,7 @@ import os
 import time
 import cPickle
 import datetime
+import numpy as np
 
 from explauto.utils import rand_bounds
 from explauto.experiment import Experiment
@@ -9,7 +10,7 @@ from explauto.experiment.log import ExperimentLog
 
 
 class ToolsExperiment(Experiment):
-    def __init__(self, config, log = None, log_dir = None, n_trials = 1):
+    def __init__(self, config, context_mode, log = None, log_dir = None, n_trials = 1):
         
         self.config = config
         
@@ -22,7 +23,7 @@ class ToolsExperiment(Experiment):
         #self.ag = DmpAgent(self.config, self.env)
         self.ag = self.config.supervisor_cls(self.config, self.env, **self.config.supervisor_config)
         
-        Experiment.__init__(self, self.env, self.ag)
+        Experiment.__init__(self, self.env, self.ag, context_mode)
         
             
         if log is None:
@@ -93,9 +94,11 @@ class ToolsExperiment(Experiment):
         #print 'Motor babbling : ', n, "points..."
 
         for i in range(n):
+            if self.context_mode.has_key('reset_iterations') and np.mod(i, self.context_mode['reset_iterations']) == 0:
+                self.env.reset()
             m = self.ag.motor_babbling()
             m_mov = self.ag.motor_primitive(m)
-            s_mov = self.env.update(m_mov, log=False)
+            s_mov = self.env.update(m_mov, reset=False, log=False)
             s = self.ag.sensory_primitive(s_mov)
             #print 'Babbling iteration', i, ': m =', m, 's =', s
             self.ag.update_sensorimotor_models(m, s)
