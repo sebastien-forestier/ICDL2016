@@ -126,13 +126,13 @@ class Supervisor(Observable):
             return self.create_module()
                         
     def fast_forward(self, log, forward_im=False):
-        ms_list = []
+        #ms_list = []
         for m,s in zip(log.logs['agentM'], log.logs['agentS']):
             ms = np.append(m,s)
-            ms_list += [ms]
-        ms_array = np.array(ms_list)
+            self.update_sensorimotor_models(ms)
+            #ms_list += [ms]
         for mid, mod in self.modules.iteritems():
-            mod.fast_forward_models(log, ms_array, mid, forward_im=forward_im)        
+            mod.fast_forward_models(log, ms_list=None, from_log_mod=mid, forward_im=forward_im)        
         
     def eval_mode(self): 
         self.sm_modes = {}
@@ -177,13 +177,34 @@ class Supervisor(Observable):
     def get_m(self, ms): return ms[self.conf.m_dims]
     def get_s(self, ms): return ms[self.conf.s_dims]
                 
-    def update_sensorimotor_models(self, m, s):
-        ms = self.set_ms(m, s)
-        self.emit('agentM', m)
-        self.emit('agentS', s)
-        for mid in ["mod1", "mod3", "mod4"]:
-            mod = self.modules[mid]
-            mod.update_sm(mod.get_m(ms), mod.get_s(ms))    
+    def update_sensorimotor_models(self, ms):
+        self.emit('agentM', self.get_m(ms))
+        self.emit('agentS', self.get_s(ms)) 
+            
+        for mid in ["mod1", "mod2", "mod3"]:
+            self.modules[mid].update_sm(self.modules[mid].get_m(ms), self.modules[mid].get_s(ms))
+            
+        obj_end_pos_y = ms[13] + ms[-1]
+        tool1_moved = (abs(ms[-11] - ms[-9]) > 0.0001)
+        tool2_moved = (abs(ms[-5] - ms[-3]) > 0.0001)
+        tool1_touched_obj = tool1_moved and (abs(ms[-9] - obj_end_pos_y) < 0.01)
+        tool2_touched_obj = tool2_moved and (abs(ms[-3] - obj_end_pos_y) < 0.01)
+        obj_moved = abs(ms[-1]) > 0.0001
+        obj_moved_with_hand = obj_moved and (not tool1_touched_obj) and (not tool2_touched_obj)
+        
+        if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
+            self.modules["mod5"].update_sm(self.modules["mod5"].get_m(ms), self.modules["mod5"].get_s(ms))
+            return "mod5"
+            #print "tool1 moved"
+        elif tool2_touched_obj or (tool2_moved and not obj_moved_with_hand):
+            self.modules["mod6"].update_sm(self.modules["mod6"].get_m(ms), self.modules["mod6"].get_s(ms))
+            return "mod6"
+            #print "tool2 moved"
+        else:
+            self.modules["mod4"].update_sm(self.modules["mod4"].get_m(ms), self.modules["mod4"].get_s(ms))
+            return "mod4" if obj_moved else None
+            #print "no tool moved"
+              
         
     def choose_space_child(self, s_space, s, mode="competence", local="local"):
         """ 
@@ -195,14 +216,17 @@ class Supervisor(Observable):
         except KeyError:
             return None
         if len(possible_mids) == 1:
-            return possible_mids[0]
-        y = self.set_ms(s=s)[s_space]      
+            return possible_mids[0]  
         if mode == "competence":
             if local:
-                competences = [- self.modules[pmid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(y, k=1)[0][0] for pmid in possible_mids]
+#                 for mid in ["mod2", "mod5", 'mod6']:
+#                     dists, idxs = self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)
+#                     print mid, dists, idxs, self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.get_xy(idxs[0]), y, s
+                competences = [- self.modules[pmid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)[0][0] for pmid in possible_mids]
+                print competences 
+#                 print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
             else:
                 competences = [self.modules[pmid].competence() for pmid in possible_mids]
-            print competences 
             return possible_mids[np.array(competences).argmax()]
         
         elif mode == "interest_greedy":   
@@ -211,7 +235,7 @@ class Supervisor(Observable):
                 return np.random.choice(possible_mids)
             else:
                 if local=="local":
-                    interests = [self.modules[pmid].interest_pt(y) for pmid in possible_mids]
+                    interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
                 else:
                     interests = [self.modules[pmid].interest() for pmid in possible_mids]
                 return possible_mids[np.array(interests).argmax()]  
@@ -222,7 +246,7 @@ class Supervisor(Observable):
                 return np.random.choice(possible_mids)
             else:
                 if local=="local":
-                    interests = [self.modules[pmid].interest_pt(y) for pmid in possible_mids]
+                    interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
                 else:
                     interests = [self.modules[pmid].interest() for pmid in possible_mids]
                 return possible_mids[prop_choice(interests, eps=0.1)]
@@ -246,7 +270,7 @@ class Supervisor(Observable):
         #print "Choice of children of mid", mid, children 
         return children
     
-    def produce_module(self, mid, babbling=True, s=None, s_dims=None, allow_explore=False, n_explo_points=0, context_ms=None):
+    def produce_module(self, mid, babbling=True, s=None, s_dims=None, allow_explore=False, explore=None, n_explo_points=0, context_ms=None):
         mod = self.modules[mid]  
         #print "produce module ", mid, babbling, s, allow_explore, n_explo_points
         if self.explo == "all":
@@ -268,6 +292,9 @@ class Supervisor(Observable):
             mod.sensorimotor_model.mode = 'explore'
         else:
             mod.sensorimotor_model.mode = 'exploit'
+            
+        if explore is not None:
+            mod.sensorimotor_model.mode = 'explore' if explore else 'exploit'
             
         if babbling:
             m_deps = mod.produce(context_ms=context_ms)
@@ -298,7 +325,7 @@ class Supervisor(Observable):
                 m_dep = m_deps[i:i+len(self.config.modules[dep]['s'])]
                 i = i + len(self.config.modules[dep]['s'])
                 #self.modules[dep].top_down_points.put(m_dep)
-                deps_actions.append(self.produce_module(dep, babbling=False, s=m_dep, allow_explore=False))
+                deps_actions.append(self.produce_module(dep, babbling=False, s=m_dep, allow_explore=False, explore=explore))
             else:
                 m_dep = m_deps[i:i+len(dep)]
                 i = i + len(dep)
@@ -328,6 +355,16 @@ class Supervisor(Observable):
         return m_seq
                 
     
+    def inverse(self, s_space, s, context=None, explore=None):
+        if context is not None:
+            s = np.array(context + s)
+        else:
+            s = np.array(s)
+        mid = self.choose_space_child(s_space, s)
+        print "chosen module", mid
+        action = self.produce_module(mid, babbling=False, s=s, explore=explore)
+        return action.get_m_seq(len(self.conf.m_dims))[0]
+    
     def perceive(self, s_seq_, context=None, higher_module_perceive=True):
         s_seq = self.sensory_primitive(s_seq_)
         self.ms_seq = []
@@ -338,36 +375,21 @@ class Supervisor(Observable):
             self.emit('agentS', s)
             
         last_ms = self.ms_seq[-1]
+#         if abs(ms[-1]) > 0.01:
+#             print self.t, "ms", last_ms
+        mid = self.update_sensorimotor_models(last_ms)
         
-        for mid in ["mod1", "mod3", "mod4"]:
-            self.modules[mid].update_sm(self.modules[mid].get_m(last_ms), self.modules[mid].get_s(last_ms))
-            
-        tool1_moved = abs(last_ms[-15] - last_ms[-13]) > 0.0001
-        tool2_moved = abs(last_ms[-9] - last_ms[-7]) > 0.0001
-            
-        if tool1_moved:
-            self.modules["mod5"].update_sm(self.modules["mod5"].get_m(last_ms), self.modules["mod5"].get_s(last_ms))
-            #print "tool1 moved"
-        elif tool2_moved:
-            self.modules["mod6"].update_sm(self.modules["mod6"].get_m(last_ms), self.modules["mod6"].get_s(last_ms))
-            #print "tool2 moved"
-        else:
-            self.modules["mod2"].update_sm(self.modules["mod2"].get_m(last_ms), self.modules["mod2"].get_s(last_ms))
-            #print "no tool moved"
-        
-        self.modules[self.mid_control].update_im(self.modules[self.mid_control].get_m(last_ms), self.modules[self.mid_control].get_s(last_ms))
+        if mid == self.mid_control or mid is None or self.mid_control in ["mod1", "mod2", "mod3"]:
+            self.modules[self.mid_control].update_im(self.modules[self.mid_control].get_m(last_ms), self.modules[self.mid_control].get_s(last_ms))
             
         
-    def subscribe_topics_mod(self, topics, observer):
+    def subscribe_topics_mids(self, topics, observer):
         for topic in topics:
             for mid in self.modules.keys():
                 self.subscribe(topic + '_' + mid, observer)
                 
-    def subscribe_mod(self, observer):
-        for mod in self.modules.values():
-            mod.subscribe('choice' + '_' + mod.mid, observer)
-            mod.subscribe('progress' + '_' + mod.mid, observer)
-            mod.subscribe('inference' + '_' + mod.mid, observer)
-            mod.subscribe('perception' + '_' + mod.mid, observer)
-            mod.subscribe('im_update' + '_' + mod.mid, observer)
+    def subscribe_topics_mods(self, topics, observer):
+        for topic in topics:
+            for mod in self.modules.values():
+                mod.subscribe(topic + '_' + mod.mid, observer)
         

@@ -68,10 +68,11 @@ class Module(Agent):
         
         #init_position = self.environment.rest_position()
         
-    def fast_forward_models(self, log, ms_list, from_log_mod, forward_im = False):
-        m_list = list(ms_list[:,self.mconf['m']])
-        s_list = list(ms_list[:,self.mconf['s']])
-        self.sensorimotor_model.update_batch(m_list, s_list)
+    def fast_forward_models(self, log, ms_list=None, from_log_mod=None, forward_im=False):
+        if ms_list is not None:
+            m_list = list(ms_list[:,self.mconf['m']])
+            s_list = list(ms_list[:,self.mconf['s']])
+            self.sensorimotor_model.update_batch(m_list, s_list)
         if forward_im:
             for t in log.logs['im_update' + '_' + from_log_mod]:
                 #print t, self.mconf['m'], self.mconf['s']

@@ -50,7 +50,8 @@ class ToolsExperiment(Experiment):
         self.ag.subscribe('agentM', self)
         self.ag.subscribe('agentS', self)
         self.ag.subscribe('babbling_module', self)
-        self.ag.subscribe_topics_mod(['interest', 'competence', 'chidren_choice'], self)
+        self.ag.subscribe_topics_mids(['interest', 'competence', 'chidren_choice', 'im_update'], self)
+        self.ag.subscribe_topics_mods(['im_update'], self)
             
         self.n_trials = n_trials
         self.trial = 0
@@ -65,7 +66,7 @@ class ToolsExperiment(Experiment):
         self.ag.subscribe('agentM', self)
         self.ag.subscribe('agentS', self)
         self.ag.subscribe('babbling_module', self)
-        self.ag.subscribe_topics_mod(['interest', 'competence', 'chidren_choice'], self)
+        self.ag.subscribe_topics_mod(['interest', 'competence', 'chidren_choice', 'im_update'], self)
         
     @classmethod
     def from_log(cls, config, log_dir, from_log_dir, from_log_trial, n_logs=1, forward_im=False):
@@ -101,7 +102,8 @@ class ToolsExperiment(Experiment):
             s_mov = self.env.update(m_mov, reset=False, log=False)
             s = self.ag.sensory_primitive(s_mov)
             #print 'Babbling iteration', i, ': m =', m, 's =', s
-            self.ag.update_sensorimotor_models(m, s)
+            ms = np.hstack((m,s))
+            self.ag.update_sensorimotor_models(ms)
 
         self._update_logs()
 

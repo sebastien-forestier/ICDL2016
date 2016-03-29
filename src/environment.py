@@ -38,6 +38,7 @@ class GripArmEnvironment(Environment):
         self.reset()
         
     def reset(self):
+        #print "reset gripper"
         self.gripper = self.rest_state[3]
         self.logs = []
         
@@ -107,6 +108,7 @@ class Stick(Environment):
 
 
     def reset(self):
+        #print "reset Stick"
         self.held = False
         self.handle_pos = np.array(self.rest_state[0:2])
         self.angle = self.rest_state[2]
@@ -175,6 +177,7 @@ class Object(Environment):
         
         
     def reset(self):
+        #print "reset object"
         self.move = 0
         self.pos = rand_bounds(self.bounds)[0]
         self.logs = []
@@ -204,6 +207,7 @@ class Object(Environment):
         return list(self.pos)
     
     def plot(self, ax, i, **kwargs_plot):
+        self.logs = self.logs[-50:]
         pos = self.logs[i][0]        
         rectangle = plt.Rectangle((pos[0] - 0.05, pos[1] - 0.05), 0.1, 0.1, **kwargs_plot)
         ax.add_patch(rectangle) 
@@ -322,4 +326,15 @@ class ICCM2016Environment(DynamicEnvironment):
     @property
     def current_context(self):
         return self.env.top_env.pos
+    
+    # Change object sensory space to be 2D as relative change of position ds
+    def compute_sensori_effect(self, m_traj):
+        c = self.current_context
+        s = DynamicEnvironment.compute_sensori_effect(self, m_traj)
+        s_o_end = s[[-4,-1]]
+        res = list(s[:-6]) + list(np.array(s_o_end) - np.array(c))
+        self.env.lower_env.reset() # reset arm and tools but not object
+        self.env.top_env.move = 0 # tools have been reset so object must not follow them
+        return res
+    
         

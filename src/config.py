@@ -29,7 +29,7 @@ class Config(object):
     
         self.name = name or 'Experiment'
         self.init_rest_trial = False
-        self.bootstrap = 100
+        self.bootstrap = 10000
         self.bootstrap_range_div = 1.
         self.iter = iterations or 50
         self.log_each = self.iter #must be <= iter
@@ -74,7 +74,7 @@ class Config(object):
         self.move_steps = 50
         self.motor_dims = range(self.motor_n_dims)
         
-        self.s_n_dims = 9 * self.n_bfs
+        self.s_n_dims = 25
         
         self.sensori_dims = range(self.motor_n_dims, self.motor_n_dims + self.s_n_dims)
         self.used_dims = self.motor_n_dims + self.s_n_dims
@@ -136,7 +136,7 @@ class Config(object):
             self.s_spaces = dict(s_h=range(self.motor_n_dims + self.n_context_dims + 0, self.motor_n_dims + self.n_context_dims + 9),
                                  s_t1=range(self.motor_n_dims + self.n_context_dims + 9, self.motor_n_dims + self.n_context_dims + 15),
                                  s_t2=range(self.motor_n_dims + self.n_context_dims + 15, self.motor_n_dims + self.n_context_dims + 21),
-                                 s_o=range(self.motor_n_dims, self.motor_n_dims + 2) + range(self.motor_n_dims + 21, self.motor_n_dims + self.n_context_dims + 27))
+                                 s_o=range(self.motor_n_dims, self.motor_n_dims + 2) + range(self.motor_n_dims + self.n_context_dims + 21, self.motor_n_dims + self.n_context_dims + 23))
 
             self.modules = dict(mod1 = dict(m = self.m_spaces["m_arm"],
                                           s = self.s_spaces["s_h"],     
@@ -151,18 +151,6 @@ class Config(object):
                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 
                                 mod2 = dict(m = self.s_spaces["s_h"],
-                                          s = self.s_spaces["s_o"],     
-                                          m_list = [self.s_spaces["s_h"]],      
-                                          operator = "par",                            
-                                          babbling_name = "goal",
-                                          sm_name = sm,
-                                          im_name = self.im_name,
-                                          im_mode = im_mode,
-                                          from_log = None,
-                                          context_mode=self.context_mode,
-                                          motor_babbling_n_iter=self.motor_babbling_n_iter),
-                                
-                                mod3 = dict(m = self.s_spaces["s_h"],
                                           s = self.s_spaces["s_t1"],     
                                           m_list = [self.s_spaces["s_h"]],      
                                           operator = "par",                            
@@ -174,7 +162,7 @@ class Config(object):
                                           context_mode=None,
                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 
-                                mod4 = dict(m = self.s_spaces["s_h"],
+                                mod3 = dict(m = self.s_spaces["s_h"],
                                           s = self.s_spaces["s_t2"],     
                                           m_list = [self.s_spaces["s_h"]],      
                                           operator = "par",                            
@@ -184,6 +172,19 @@ class Config(object):
                                           im_mode = im_mode,
                                           from_log = None,
                                           context_mode=None,
+                                          motor_babbling_n_iter=self.motor_babbling_n_iter),
+                                
+                                
+                                mod4 = dict(m = self.s_spaces["s_h"],
+                                          s = self.s_spaces["s_o"],     
+                                          m_list = [self.s_spaces["s_h"]],      
+                                          operator = "par",                            
+                                          babbling_name = "goal",
+                                          sm_name = sm,
+                                          im_name = self.im_name,
+                                          im_mode = im_mode,
+                                          from_log = None,
+                                          context_mode=self.context_mode,
                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 
                                 mod5 = dict(m = self.s_spaces["s_t1"],
@@ -302,8 +303,8 @@ class Config(object):
         self.m_mins = [-1.] * (self.n_dyn_motors * (self.n_bfs+1))
         self.m_maxs = [1.] * (self.n_dyn_motors * (self.n_bfs+1))
         
-        self.s_mins = [-1.5] * (9 * 3 + 2)
-        self.s_maxs = [1.5] * (9 * 3 + 2)
+        self.s_mins = [-1.5] * (25)
+        self.s_maxs = [1.5] * (25)
         
         ################################### Process CONFIG ###################################
         
@@ -320,7 +321,7 @@ configs = {}
 
 #################### EXPERIMENT  ####################
 
-iterations = 100000
+iterations = 200000
 
 config_list = {"xp1":[#"F-RmB",
                       #"F-RGB",
