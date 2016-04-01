@@ -219,11 +219,14 @@ class Module(Agent):
             if self.im_mode == "sg" or self.im_mode == "sp":
                 self.interest_model.update(hstack((m, self.s)), hstack((m, s)))
                 self.emit('im_update_' + self.mid, (hstack((m, self.s)), hstack((m, s))))
-            elif self.im_mode == "sg_snn":
-                self.interest_model.update(hstack((m, self.s)), hstack((m, s)), self.su)
-                self.emit('im_update_' + self.mid, (hstack((m, self.s)), hstack((m, s)), self.su))
             else:
                 raise NotImplementedError
+        
+    def competence_reached(self, s):
+        if self.sensorimotor_model.size() > 0:
+            return - self.sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)[0][0]
+        else:
+            return - np.inf
         
     def competence_pt(self, m): return self.interest_model.competence_pt(m)
     def interest_pt(self, m): return self.interest_model.interest_pt(m)

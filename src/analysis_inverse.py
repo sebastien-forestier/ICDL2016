@@ -71,9 +71,7 @@ while True:
     xp.env.env.env.top_env.pos = context
     print "current_context", xp.env.get_current_context()
     print "ds goal", sg
-    mid = xp.ag.choose_space_child(s_space, context + sg)
-    print "chosen module:", mid
-    m = xp.ag.inverse(s_space, sg, context=context, explore=False)
+    m = xp.ag.inverse(s_space, sg, context=context, explore=False)[0]
     sr = xp.env.update(m, reset=False)
     ms = np.hstack((m, sr))
     #print "reached ms:", ms

@@ -233,7 +233,7 @@ class ICCM2016Environment(DynamicEnvironment):
                          s_maxs=[2, 2],
                          length=0.3, 
                          type="1",
-                         handle_tol=0.2, 
+                         handle_tol=0.05, 
                          handle_noise=0.1 if noise == 1 else 0., 
                          rest_state=[-0.75, 0.25, 0.75])
         
@@ -243,7 +243,7 @@ class ICCM2016Environment(DynamicEnvironment):
                          s_maxs=[2, 2],
                          length=0.2, 
                          type="2",
-                         handle_tol=0.2, 
+                         handle_tol=0.05, 
                          handle_noise=0.1 if noise == 1 else 0., 
                          rest_state=[0.75, 0.25, 0.25])
         
@@ -273,7 +273,7 @@ class ICCM2016Environment(DynamicEnvironment):
                           m_maxs = list([1.] * 7), 
                           s_mins = [-2., -2.], # new pos
                           s_maxs = [2., 2.],
-                          object_tol = 0.1, 
+                          object_tol = 0.2, 
                           bounds = np.array([[-0.5, -0.5],
                                                  [0.5, 0.5]]))
         

@@ -1,11 +1,11 @@
 import numpy as np
 
 from explauto.utils.config import make_configuration
-from explauto.sensorimotor_model.non_parametric import NonParametric
+from explauto.sensorimotor_model.non_parametric import NonParametric, ContextNonParametric
 from supervisor import Supervisor
 from environment import ICCM2016Environment
 from explauto.environment.context_environment import ContextEnvironment
-from explauto.interest_model.random import MiscRandomInterest, competence_dist, competence_exp
+from explauto.interest_model.random import MiscRandomInterest, ContextRandomInterest, competence_dist, competence_exp
 
 
 class Config(object):
@@ -29,7 +29,7 @@ class Config(object):
     
         self.name = name or 'Experiment'
         self.init_rest_trial = False
-        self.bootstrap = 10000
+        self.bootstrap = 100
         self.bootstrap_range_div = 1.
         self.iter = iterations or 50
         self.log_each = self.iter #must be <= iter
@@ -89,19 +89,20 @@ class Config(object):
                                    'competence_mode': 'knn',
                                    'k': 20,
                                    'progress_mode': 'local'}),
-                    'miscRandom_global': (MiscRandomInterest, {
-                                  'competence_measure': competence_dist,
+                    'context_miscRandom_local': (ContextRandomInterest, {
                                   #'competence_measure': lambda target, reached, dist_max:competence_exp(target, reached, dist_min=0.01, dist_max=dist_max, power=20.),
                                    'win_size': 1000,
                                    'competence_mode': 'knn',
                                    'k': 20,
-                                   'progress_mode': 'global'}),
+                                   'progress_mode': 'local',
+                                   'context_mode': self.context_mode}),
             }
         
         self.choose_children_local = (supervisor_ccl == 'local')
         
         self.sms = {
             'knn1': (NonParametric, {'fwd': 'NN', 'inv': 'NN', 'sigma_explo_ratio':0.01}),
+            'context_knn': (ContextNonParametric, {'fwd': 'NN', 'inv': 'NN', 'sigma_explo_ratio':0.01,'context_mode': self.context_mode}),
         }
           
           
@@ -180,8 +181,8 @@ class Config(object):
                                           m_list = [self.s_spaces["s_h"]],      
                                           operator = "par",                            
                                           babbling_name = "goal",
-                                          sm_name = sm,
-                                          im_name = self.im_name,
+                                          sm_name = 'context_knn',
+                                          im_name = 'context_miscRandom_local',
                                           im_mode = im_mode,
                                           from_log = None,
                                           context_mode=self.context_mode,
@@ -192,8 +193,8 @@ class Config(object):
                                           m_list = [self.s_spaces["s_t1"]],      
                                           operator = "par",                            
                                           babbling_name = "goal",
-                                          sm_name = sm,
-                                          im_name = self.im_name,
+                                          sm_name = 'context_knn',
+                                          im_name = 'context_miscRandom_local',
                                           im_mode = im_mode,
                                           from_log = None,
                                           context_mode=self.context_mode,
@@ -204,8 +205,8 @@ class Config(object):
                                           m_list = [self.s_spaces["s_t2"]],      
                                           operator = "par",                            
                                           babbling_name = "goal",
-                                          sm_name = sm,
-                                          im_name = self.im_name,
+                                          sm_name = 'context_knn',
+                                          im_name = 'context_miscRandom_local',
                                           im_mode = im_mode,
                                           from_log = None,
                                           context_mode=self.context_mode,

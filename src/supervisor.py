@@ -31,6 +31,10 @@ class Supervisor(Observable):
         self.t = 1
         self.modules = {}
         self.chosen_modules = {}
+        self.chosen_spaces = {}
+        for s_space in self.config.s_spaces:
+            self.chosen_spaces[s_space] = 0
+            
         self.mid_control = ''
         self.last_space_children_choices = {}
         
@@ -57,6 +61,49 @@ class Supervisor(Observable):
             self.hierarchy.add_edge_space_module(mid, space)
         self.hierarchy.add_edge_module_space(mid, self.config.modules[mid]['s'])
                 
+                
+    def choose_interesting_space(self, mode='softmax'):
+        s_spaces = self.config.s_spaces
+        interests = {}
+        for s_space in s_spaces.keys():
+            if s_space == "s_h":
+                interests[s_space] = self.modules["mod1"].interest()
+            elif s_space == "s_t1":
+                interests[s_space] = self.modules["mod2"].interest()
+            elif s_space == "s_t2":
+                interests[s_space] = self.modules["mod3"].interest()
+            elif s_space == "s_o":
+                interests[s_space] = sum([self.modules[mid].interest() for mid in ["mod4", "mod5", "mod6"]])
+        
+        if mode == 'random':
+            s_space = np.random.choice(self.interests.keys())
+        elif mode == 'greedy':
+            eps = 0.1
+            if np.random.random() < eps:
+                s_space = np.random.choice(self.interests.keys())
+            else:
+                s_space = max(interests, key=interests.get)
+        elif mode == 'softmax':
+            temperature = 0.1
+            w = interests.values()
+            s_space = s_spaces.keys()[softmax_choice(w, temperature)]
+        
+        elif mode == 'prop':
+            w = interests.values()
+            s_space = s_spaces.keys()[prop_choice(w, eps=0.1)]
+            if self.t % 200 == 1:
+                print
+                print 'iterations', self.t - 1
+                print "competences", np.array([self.modules[mid].competence() for mid in self.modules.keys()])
+                print "interests", np.array([self.modules[mid].interest() for mid in self.modules.keys()])
+                print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
+                print "im db n points", [len(self.modules[mid].interest_model.data_xc) for mid in self.modules.keys()]
+                print self.chosen_modules
+        
+        self.chosen_spaces[s_space] = self.chosen_spaces[s_space] + 1
+        return s_space
+        
+        
     def choose_babbling_module(self, auto_create=False, progress_threshold=1e-2, mode='softmax', weight_by_level=False):
         interests = {}
         for mid in self.modules.keys():
@@ -214,20 +261,22 @@ class Supervisor(Observable):
         try:
             possible_mids = self.hierarchy.space_children(s_space)
         except KeyError:
+            print "s_space not found in hierarchy"
             return None
         if len(possible_mids) == 1:
-            return possible_mids[0]  
+            mid = possible_mids[0]  
+            return mid
         if mode == "competence":
             if local:
 #                 for mid in ["mod2", "mod5", 'mod6']:
 #                     dists, idxs = self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)
 #                     print mid, dists, idxs, self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.get_xy(idxs[0]), y, s
-                competences = [- self.modules[pmid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)[0][0] for pmid in possible_mids]
-                print competences 
+                competences = [self.modules[pmid].competence_reached(s) for pmid in possible_mids]
 #                 print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
             else:
                 competences = [self.modules[pmid].competence() for pmid in possible_mids]
-            return possible_mids[np.array(competences).argmax()]
+            mid = possible_mids[np.array(competences).argmax()]
+            return mid
         
         elif mode == "interest_greedy":   
             eps = 0.1
@@ -238,7 +287,8 @@ class Supervisor(Observable):
                     interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
                 else:
                     interests = [self.modules[pmid].interest() for pmid in possible_mids]
-                return possible_mids[np.array(interests).argmax()]  
+                mid = possible_mids[np.array(interests).argmax()]
+                return mid
             
         elif mode == "interest_prop":   
             eps = 0.1
@@ -249,10 +299,12 @@ class Supervisor(Observable):
                     interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
                 else:
                     interests = [self.modules[pmid].interest() for pmid in possible_mids]
-                return possible_mids[prop_choice(interests, eps=0.1)]
+                mid = possible_mids[prop_choice(interests, eps=0.1)]
+                return mid
             
         elif mode == "random":   
             mid = np.random.choice(possible_mids)
+            self.chosen_modules[mid] = self.chosen_modules[mid] + 1
             return mid
         
     def get_mid_children(self, mid, m, mode="competence", local="local"):
@@ -340,30 +392,45 @@ class Supervisor(Observable):
         for mid in self.modules.keys():
             self.last_space_children_choices[mid] = Queue.Queue()
             
-        mid = self.choose_babbling_module(mode=self.choice, weight_by_level=self.llb)
-        self.mid_control = mid   
-        action = self.produce_module(mid, n_explo_points=self.n_explo_points, context_ms=context_ms)
-        self.action = action
-        #print "Action", action.n_iterations, "mid", mid
-        #self.action.print_action()
-        m_seq = action.get_m_seq(len(self.conf.m_dims))
+#         mid = self.choose_babbling_module(mode=self.choice, weight_by_level=self.llb)
+#         self.mid_control = mid   
+#         action = self.produce_module(mid, n_explo_points=self.n_explo_points, context_ms=context_ms)
+#         self.action = action
+#         #print "Action", action.n_iterations, "mid", mid
+#         #self.action.print_action()
+#         m_seq = action.get_m_seq(len(self.conf.m_dims))
+        s_space = self.choose_interesting_space(mode=self.choice)
+        #print "chosen s_space", s_space
         
+        if s_space == "s_o":
+            s = - np.array(context_ms)
+        else:
+            s = rand_bounds(np.array([self.conf.mins[self.config.s_spaces[s_space]], self.conf.maxs[self.config.s_spaces[s_space]]]))[0]
+            
         #print "m_seq", m_seq
-        self.m_seq = m_seq
+        self.m_seq = self.inverse(s_space, s, babbling=True, context=context_ms)
         #print "Produce ", self.t
         self.t = self.t + 1
-        return m_seq
+        return self.m_seq
                 
     
-    def inverse(self, s_space, s, context=None, explore=None):
-        if context is not None:
-            s = np.array(context + s)
+    def inverse(self, s_space, s, babbling=False, context=None, explore=None):
+        if s_space == "s_o":
+            s = np.array(list(context) + list(s))
         else:
             s = np.array(s)
-        mid = self.choose_space_child(s_space, s)
-        print "chosen module", mid
+        mid = self.choose_space_child(self.config.s_spaces[s_space], s)
+        self.chosen_modules[mid] = self.chosen_modules[mid] + 1
+        #print "chosen mid", mid
+        if babbling:
+            self.mid_control = mid
+            #print self.mid_control
+            self.modules[mid].s = s
+        else:
+            self.mid_control = None
         action = self.produce_module(mid, babbling=False, s=s, explore=explore)
-        return action.get_m_seq(len(self.conf.m_dims))[0]
+        self.m_seq = action.get_m_seq(len(self.conf.m_dims))
+        return self.m_seq
     
     def perceive(self, s_seq_, context=None, higher_module_perceive=True):
         s_seq = self.sensory_primitive(s_seq_)
@@ -379,9 +446,10 @@ class Supervisor(Observable):
 #             print self.t, "ms", last_ms
         mid = self.update_sensorimotor_models(last_ms)
         
-        if mid == self.mid_control or mid is None or self.mid_control in ["mod1", "mod2", "mod3"]:
+        #print "mid_control", self.mid_control
+        if self.mid_control is not None and (mid == self.mid_control or mid is None or self.mid_control in ["mod1", "mod2", "mod3"]):
             self.modules[self.mid_control].update_im(self.modules[self.mid_control].get_m(last_ms), self.modules[self.mid_control].get_s(last_ms))
-            
+            #print "mid control upd"
         
     def subscribe_topics_mids(self, topics, observer):
         for topic in topics:
