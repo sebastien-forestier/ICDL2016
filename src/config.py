@@ -37,7 +37,7 @@ class Config(object):
         self.n_eval = 0
         self.eval_modes = []
         
-        self.gui = False
+        self.gui = True
         
         self.hierarchy_type = hierarchy_type
         self.babbling_name = babbling_name
@@ -322,7 +322,7 @@ configs = {}
 
 #################### EXPERIMENT  ####################
 
-iterations = 200000
+iterations = 50000
 
 config_list = {"xp1":[#"F-RmB",
                       #"F-RGB",

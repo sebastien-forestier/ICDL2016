@@ -6,7 +6,8 @@ from explauto.experiment.log import ExperimentLog
 from config import configs
 from explauto.utils import rand_bounds
 
-log_dir = "/home/sforesti/scm/Flowers/ICCM2016/src/test/"
+log_dir = "/home/sforesti/scm/Flowers/ICCM2016/src/test2/"
+config_log_name = "H-P-AMB-CTC"
 config_name = "H-P-AMB"
 trial = 1
 
@@ -16,9 +17,9 @@ config.env_cfg["env_conf"]["gui"]= True
 
 
 log = ExperimentLog(None, None, None)
-for key in ["agentM", "agentS"]:
+for key in ["agentM", "agentS", "im_update_mod1", "im_update_mod2", "im_update_mod3", "im_update_mod4", "im_update_mod5", "im_update_mod6"]:
     try:
-        filename = log_dir + config_name + '/log{}-'.format(trial) + key + '-{}.pickle'.format(0)
+        filename = log_dir + config_log_name + '/log{}-'.format(trial) + key + '-{}.pickle'.format(0)
         with open(filename, 'r') as f:
             log_key = cPickle.load(f)
         log._logs[key] = log_key
@@ -28,18 +29,18 @@ for key in ["agentM", "agentS"]:
     
     
 xp = ToolsExperiment(config, context_mode=config.context_mode)
-xp.ag.fast_forward(log, forward_im=False)
+xp.ag.fast_forward(log, forward_im=True)
 
 
 
-s_space = config.s_spaces["s_o"]
+s_space = "s_o"
 print "s_space", s_space
 
-context = [0.18, -0.028]
+context = [0.2, 0.2]
 xp.env.env.env.top_env.pos = context
 print "current_context", xp.env.get_current_context()
 
-sg = [0.2, 0.046]
+sg = [-0.2, -0.2]
 print "sg", sg
 
 #mid = xp.ag.choose_space_child(s_space, context + s)
@@ -67,7 +68,7 @@ print "sg", sg
 while True:
     print
     context = list(rand_bounds(np.array([[-0.5, -0.5], [0.5, 0.5]]))[0])
-    sg = list(rand_bounds(np.array([[-0.5, -0.5], [0.5, 0.5]]))[0])
+    sg = list(-np.array(context))
     xp.env.env.env.top_env.pos = context
     print "current_context", xp.env.get_current_context()
     print "ds goal", sg

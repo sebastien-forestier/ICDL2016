@@ -128,7 +128,7 @@ class DynamicEnvironment(Environment):
             #if abs(s[11] - (-0.85)) > 0.1: #Tool1
             #if s[-2] > 0: # One of the boxes
             #if abs(s[-1] - 0.8) > 0.01:
-            #if np.random.rand() < 0.01:
+            #if np.random.rand() < 0.001:
             #if abs(s[-1] - s[-3]) > 0.01:
             self.plot()
             #print 'dyn env s', s

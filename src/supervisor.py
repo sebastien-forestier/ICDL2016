@@ -3,7 +3,7 @@ import numpy as np
 
 from numpy import zeros
 from explauto.utils.observer import Observable
-from explauto.utils import rand_bounds, bounds_min_max, softmax_choice, prop_choice
+from explauto.utils import rand_bounds, bounds_min_max, softmax_choice, prop_choice, greedy
 
 from hierarchy import Hierarchy
 from module import Module
@@ -265,42 +265,30 @@ class Supervisor(Observable):
             return None
         if len(possible_mids) == 1:
             mid = possible_mids[0]  
-            return mid
+            return mid 
+        
+        eps = 0.1
         if mode == "competence":
             if local:
 #                 for mid in ["mod2", "mod5", 'mod6']:
 #                     dists, idxs = self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)
 #                     print mid, dists, idxs, self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.get_xy(idxs[0]), y, s
                 competences = [self.modules[pmid].competence_reached(s) for pmid in possible_mids]
+                print "choose space child", competences
 #                 print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
             else:
                 competences = [self.modules[pmid].competence() for pmid in possible_mids]
-            mid = possible_mids[np.array(competences).argmax()]
+            mid = possible_mids[greedy(competences, eps)]
             return mid
-        
-        elif mode == "interest_greedy":   
-            eps = 0.1
-            if np.random.random() < eps:
-                return np.random.choice(possible_mids)
-            else:
-                if local=="local":
-                    interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
-                else:
-                    interests = [self.modules[pmid].interest() for pmid in possible_mids]
-                mid = possible_mids[np.array(interests).argmax()]
-                return mid
             
-        elif mode == "interest_prop":   
-            eps = 0.1
-            if np.random.random() < eps:
-                return np.random.choice(possible_mids)
+        elif mode == "interest_prop":  
+            if local=="local":
+                interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
             else:
-                if local=="local":
-                    interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
-                else:
-                    interests = [self.modules[pmid].interest() for pmid in possible_mids]
-                mid = possible_mids[prop_choice(interests, eps=0.1)]
-                return mid
+                interests = [self.modules[pmid].interest() for pmid in possible_mids]
+                print "choose space child", interests
+            mid = possible_mids[prop_choice(interests, eps=eps)]
+            return mid
             
         elif mode == "random":   
             mid = np.random.choice(possible_mids)
@@ -419,7 +407,17 @@ class Supervisor(Observable):
             s = np.array(list(context) + list(s))
         else:
             s = np.array(s)
-        mid = self.choose_space_child(self.config.s_spaces[s_space], s)
+            
+        if self.choose_children_mode == 'interest_babbling':
+            if babbling:
+                ccm = "interest"
+            else:
+                ccm = "competence"  
+        else:
+            ccm = self.choose_children_mode           
+        
+        
+        mid = self.choose_space_child(self.config.s_spaces[s_space], s, mode=ccm, local=self.ccm_local)
         self.chosen_modules[mid] = self.chosen_modules[mid] + 1
         #print "chosen mid", mid
         if babbling:

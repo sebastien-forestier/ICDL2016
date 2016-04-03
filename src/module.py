@@ -1,6 +1,7 @@
 import cPickle
 import Queue
 import numpy as np
+import time
 
 from numpy import array, hstack, random
 
@@ -154,9 +155,11 @@ class Module(Agent):
             if self.n_bootstrap > 0:
                 self.n_bootstrap -= 1
                 raise ExplautoBootstrapError
+            #t0 = time.time()
             m = self.sensorimotor_model.infer(expl_dims,
                                               inf_dims,
                                               x.flatten())
+            #print "time infer", time.time() - t0
             
             self.emit(pref + 'inference' + '_' + self.mid, m)
             #print "module", self.mid, "inference"
