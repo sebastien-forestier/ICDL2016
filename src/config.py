@@ -37,7 +37,7 @@ class Config(object):
         self.n_eval = 0
         self.eval_modes = []
         
-        self.gui = True
+        self.gui = False
         
         self.hierarchy_type = hierarchy_type
         self.babbling_name = babbling_name
@@ -67,14 +67,14 @@ class Config(object):
         self.n_context_dims = 2
         
         self.context_mode = dict(mode='mcs',
-                            reset_iterations=10,
+                            reset_iterations=20,
                             context_n_dims=self.n_context_dims,
                             context_sensory_bounds=np.array([[-1.5, -1.5],[1.5, 1.5]]))
 
         self.move_steps = 50
         self.motor_dims = range(self.motor_n_dims)
         
-        self.s_n_dims = 25
+        self.s_n_dims = 20
         
         self.sensori_dims = range(self.motor_n_dims, self.motor_n_dims + self.s_n_dims)
         self.used_dims = self.motor_n_dims + self.s_n_dims
@@ -136,8 +136,8 @@ class Config(object):
             self.m_spaces = dict(m_arm=range(12))
             self.s_spaces = dict(s_h=range(self.motor_n_dims + self.n_context_dims + 0, self.motor_n_dims + self.n_context_dims + 9),
                                  s_t1=range(self.motor_n_dims + self.n_context_dims + 9, self.motor_n_dims + self.n_context_dims + 15),
-                                 s_t2=range(self.motor_n_dims + self.n_context_dims + 15, self.motor_n_dims + self.n_context_dims + 21),
-                                 s_o=range(self.motor_n_dims, self.motor_n_dims + 2) + range(self.motor_n_dims + self.n_context_dims + 21, self.motor_n_dims + self.n_context_dims + 23))
+                                 #s_t2=range(self.motor_n_dims + self.n_context_dims + 15, self.motor_n_dims + self.n_context_dims + 21),
+                                 s_o=range(self.motor_n_dims, self.motor_n_dims + 2) + range(self.motor_n_dims + self.n_context_dims + 15, self.motor_n_dims + self.n_context_dims + 18))
 
             self.modules = dict(mod1 = dict(m = self.m_spaces["m_arm"],
                                           s = self.s_spaces["s_h"],     
@@ -163,20 +163,20 @@ class Config(object):
                                           context_mode=None,
                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 
+#                                 mod3 = dict(m = self.s_spaces["s_h"],
+#                                           s = self.s_spaces["s_t2"],     
+#                                           m_list = [self.s_spaces["s_h"]],      
+#                                           operator = "par",                            
+#                                           babbling_name = "goal",
+#                                           sm_name = sm,
+#                                           im_name = self.im_name,
+#                                           im_mode = im_mode,
+#                                           from_log = None,
+#                                           context_mode=None,
+#                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
+                                
+                                
                                 mod3 = dict(m = self.s_spaces["s_h"],
-                                          s = self.s_spaces["s_t2"],     
-                                          m_list = [self.s_spaces["s_h"]],      
-                                          operator = "par",                            
-                                          babbling_name = "goal",
-                                          sm_name = sm,
-                                          im_name = self.im_name,
-                                          im_mode = im_mode,
-                                          from_log = None,
-                                          context_mode=None,
-                                          motor_babbling_n_iter=self.motor_babbling_n_iter),
-                                
-                                
-                                mod4 = dict(m = self.s_spaces["s_h"],
                                           s = self.s_spaces["s_o"],     
                                           m_list = [self.s_spaces["s_h"]],      
                                           operator = "par",                            
@@ -188,7 +188,7 @@ class Config(object):
                                           context_mode=self.context_mode,
                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 
-                                mod5 = dict(m = self.s_spaces["s_t1"],
+                                mod4 = dict(m = self.s_spaces["s_t1"],
                                           s = self.s_spaces["s_o"],     
                                           m_list = [self.s_spaces["s_t1"]],      
                                           operator = "par",                            
@@ -200,17 +200,17 @@ class Config(object):
                                           context_mode=self.context_mode,
                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 
-                                mod6 = dict(m = self.s_spaces["s_t2"],
-                                          s = self.s_spaces["s_o"],     
-                                          m_list = [self.s_spaces["s_t2"]],      
-                                          operator = "par",                            
-                                          babbling_name = "goal",
-                                          sm_name = 'context_knn',
-                                          im_name = 'context_miscRandom_local',
-                                          im_mode = im_mode,
-                                          from_log = None,
-                                          context_mode=self.context_mode,
-                                          motor_babbling_n_iter=self.motor_babbling_n_iter),
+#                                 mod6 = dict(m = self.s_spaces["s_t2"],
+#                                           s = self.s_spaces["s_o"],     
+#                                           m_list = [self.s_spaces["s_t2"]],      
+#                                           operator = "par",                            
+#                                           babbling_name = "goal",
+#                                           sm_name = 'context_knn',
+#                                           im_name = 'context_miscRandom_local',
+#                                           im_mode = im_mode,
+#                                           from_log = None,
+#                                           context_mode=self.context_mode,
+#                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 )
         else:
             raise NotImplementedError
@@ -304,8 +304,8 @@ class Config(object):
         self.m_mins = [-1.] * (self.n_dyn_motors * (self.n_bfs+1))
         self.m_maxs = [1.] * (self.n_dyn_motors * (self.n_bfs+1))
         
-        self.s_mins = [-1.5] * (25)
-        self.s_maxs = [1.5] * (25)
+        self.s_mins = [-1.5] * (20)
+        self.s_maxs = [1.5] * (20)
         
         ################################### Process CONFIG ###################################
         
@@ -348,4 +348,10 @@ config = Config(name="H-GR-AMB", hierarchy_type=1, supervisor_name="interest_gre
 configs[config.name] = config
 
 config = Config(name="H-P-AMB-CTC", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="interest_prop", supervisor_ccl="global", iterations=iterations)
+configs[config.name] = config
+
+config = Config(name="H-P-AMB-LCTC", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="interest_prop", supervisor_ccl="local", iterations=iterations)
+configs[config.name] = config
+
+config = Config(name="H-P-AMB-RDM", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="random", supervisor_ccl="global", iterations=iterations)
 configs[config.name] = config

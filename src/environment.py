@@ -167,11 +167,12 @@ class Stick(Environment):
 
 class Object(Environment):
     def __init__(self, m_mins, m_maxs, s_mins, s_maxs,
-                 object_tol, bounds):
+                 object_tol_hand, object_tol_tool, bounds):
         
         Environment.__init__(self, m_mins, m_maxs, s_mins, s_maxs)
 
-        self.object_tol_sq = object_tol * object_tol
+        self.object_tol_hand_sq = object_tol_hand * object_tol_hand
+        self.object_tol_tool_sq = object_tol_tool * object_tol_tool
         self.bounds = bounds
         self.reset()
         
@@ -188,19 +189,19 @@ class Object(Environment):
 
     def compute_sensori_effect(self, m):
         gripper_change = m[2]
-        if (gripper_change == 0 and self.move == 1) or (gripper_change == 1 and (m[0] - self.pos[0]) ** 2 + (m[1] - self.pos[1]) ** 2 < self.object_tol_sq):
+        if (gripper_change == 0 and self.move == 1) or (gripper_change == 1 and (m[0] - self.pos[0]) ** 2 + (m[1] - self.pos[1]) ** 2 < self.object_tol_hand_sq):
             self.pos = m[0:2]
             self.move = 1
         if gripper_change == -1:
             self.move = 0
             #print "object moved by hand"
-        if self.move == 2 or (self.move == 0 and (m[3] - self.pos[0]) ** 2 + (m[4] - self.pos[1]) ** 2 < self.object_tol_sq):
+        if self.move == 2 or (self.move == 0 and (m[3] - self.pos[0]) ** 2 + (m[4] - self.pos[1]) ** 2 < self.object_tol_tool_sq):
             self.pos = m[3:5]
             self.move = 2
             #print "object moved by tool1"
-        if self.move == 3 or (self.move == 0 and (m[5] - self.pos[0]) ** 2 + (m[6] - self.pos[1]) ** 2 < self.object_tol_sq):
-            self.pos = m[5:7]
-            self.move = 3
+#         if self.move == 3 or (self.move == 0 and (m[5] - self.pos[0]) ** 2 + (m[6] - self.pos[1]) ** 2 < self.object_tol_tool_sq):
+#             self.pos = m[5:7]
+#             self.move = 3
             #print "object moved by tool2"
         self.logs.append([self.pos,
                           self.move])
@@ -233,38 +234,38 @@ class ICCM2016Environment(DynamicEnvironment):
                          s_maxs=[2, 2],
                          length=0.3, 
                          type="1",
-                         handle_tol=0.05, 
+                         handle_tol=0.2, 
                          handle_noise=0.1 if noise == 1 else 0., 
                          rest_state=[-0.75, 0.25, 0.75])
         
-        stick2_cfg = dict(m_mins=[-1, -1, -1, -1, -1], 
-                         m_maxs=[1, 1, 1, 1, 1], 
-                         s_mins=[-2, -2], 
-                         s_maxs=[2, 2],
-                         length=0.2, 
-                         type="2",
-                         handle_tol=0.05, 
-                         handle_noise=0.1 if noise == 1 else 0., 
-                         rest_state=[0.75, 0.25, 0.25])
+#         stick2_cfg = dict(m_mins=[-1, -1, -1, -1, -1], 
+#                          m_maxs=[1, 1, 1, 1, 1], 
+#                          s_mins=[-2, -2], 
+#                          s_maxs=[2, 2],
+#                          length=0.2, 
+#                          type="2",
+#                          handle_tol=0.1, 
+#                          handle_noise=0.1 if noise == 1 else 0., 
+#                          rest_state=[0.75, 0.25, 0.25])
         
-        sticks_cfg = dict(
-                        s_mins = [-2, -2, -2, -2],
-                        s_maxs = [2, 2, 2, 2],
-                        envs_cls = [Stick, Stick],
-                        envs_cfg = [stick1_cfg, stick2_cfg],
-                        combined_s = lambda s:s  # from s:  Tool1 end pos + Tool2 end pos
-                        )
+#         sticks_cfg = dict(
+#                         s_mins = [-2, -2, -2, -2],
+#                         s_maxs = [2, 2, 2, 2],
+#                         envs_cls = [Stick, Stick],
+#                         envs_cfg = [stick1_cfg, stick2_cfg],
+#                         combined_s = lambda s:s  # from s:  Tool1 end pos + Tool2 end pos
+#                         )
         
         arm_stick_cfg = dict(m_mins=list([-1.] * 4), # 3DOF + gripper
                              m_maxs=list([1.] * 4),
-                             s_mins=list([-2.] * 8),
-                             s_maxs=list([2.] * 8),
-                             top_env_cls=CombinedEnvironment, 
+                             s_mins=list([-2.] * 6),
+                             s_maxs=list([2.] * 6),
+                             top_env_cls=Stick, 
                              lower_env_cls=GripArmEnvironment, 
-                             top_env_cfg=sticks_cfg, 
+                             top_env_cfg=stick1_cfg, 
                              lower_env_cfg=gripArm_cfg, 
                              fun_m_lower= lambda m:m,
-                             fun_s_lower=lambda m,s:s+s,  # (hand pos + hand angle + gripper_change + gripper state) * 2 tools
+                             fun_s_lower=lambda m,s:s,  # (hand pos + hand angle + gripper_change + gripper state) * 2 tools
                              fun_s_top=lambda m,s_lower,s:s_lower[0:2] + s_lower[3:5] + s) # from s: Tool1 end pos + Tool2 end pos  from m: hand_pos + gripper_change + gripper state
         
         
@@ -273,7 +274,8 @@ class ICCM2016Environment(DynamicEnvironment):
                           m_maxs = list([1.] * 7), 
                           s_mins = [-2., -2.], # new pos
                           s_maxs = [2., 2.],
-                          object_tol = 0.2, 
+                          object_tol_hand = 0.2, 
+                          object_tol_tool = 0.1,
                           bounds = np.array([[-0.5, -0.5],
                                                  [0.5, 0.5]]))
         
@@ -285,8 +287,8 @@ class ICCM2016Environment(DynamicEnvironment):
         arm_sticks_object_cfg = dict(
                                    m_mins=arm_stick_cfg['m_mins'],
                                    m_maxs=arm_stick_cfg['m_maxs'],
-                                   s_mins=list([-2.] * 9),
-                                   s_maxs=list([2.] * 9), # (hand pos + gripper state + tool1 end pos + tool2 end pos + last objects pos
+                                   s_mins=list([-2.] * 7),
+                                   s_maxs=list([2.] * 7), # (hand pos + gripper state + tool1 end pos + tool2 end pos + last objects pos
                                    top_env_cls=Object, 
                                    lower_env_cls=HierarchicallyCombinedEnvironment, 
                                    top_env_cfg=object_cfg, 
@@ -300,14 +302,14 @@ class ICCM2016Environment(DynamicEnvironment):
                         env_cls=HierarchicallyCombinedEnvironment,
                         m_mins=[-1.] * 4 * 3, 
                         m_maxs=[1.] * 4 * 3, 
-                        s_mins=[-1.5] * 9 * 3,
-                        s_maxs=[1.5] * 9 * 3,
+                        s_mins=[-1.5] * 7 * 3,
+                        s_maxs=[1.5] * 7 * 3,
                         n_bfs = 2,
                         n_motor_traj_points=3, 
                         n_sensori_traj_points=3, 
                         move_steps=move_steps, 
                         n_dynamic_motor_dims=4,
-                        n_dynamic_sensori_dims=9, 
+                        n_dynamic_sensori_dims=7, 
                         max_params=max_params,
                         motor_traj_type="DMP", 
                         sensori_traj_type="samples",
@@ -315,8 +317,8 @@ class ICCM2016Environment(DynamicEnvironment):
                         optim_end_position=True, 
                         default_motor_initial_position=[0.]*4, 
                         default_motor_end_position=[0.]*4,
-                        default_sensori_initial_position=[0., 1., 0., 0., -0.85, 0.35, 0., 0., 0.], 
-                        default_sensori_end_position=[0., 1., 0., 0., -0.85, 0.35, 0., 0., 0.],
+                        default_sensori_initial_position=[0., 1., 0., 0., -0.85, 0.35, 0.], 
+                        default_sensori_end_position=[0., 1., 0., 0., -0.85, 0.35, 0.],
                         gui=gui)
             
         
@@ -333,6 +335,27 @@ class ICCM2016Environment(DynamicEnvironment):
         s = DynamicEnvironment.compute_sensori_effect(self, m_traj)
         s_o_end = s[[-4,-1]]
         res = list(s[:-6]) + list(np.array(s_o_end) - np.array(c))
+        #print res
+        s_ = res
+        obj_end_pos_y = s_[1] + s_[-1]
+        tool1_moved = (abs(s_[-5] - s_[-3]) > 0.0001)
+        #tool2_moved = (abs(ms[-5] - ms[-3]) > 0.0001)
+        tool1_touched_obj = tool1_moved and (abs(s_[-3] - obj_end_pos_y) < 0.0001)
+        #tool2_touched_obj = tool2_moved and (abs(ms[-3] - obj_end_pos_y) < 0.0001)
+        obj_moved = abs(s_[-1]) > 0.0001
+        obj_moved_with_hand = obj_moved and (not tool1_touched_obj)# and (not tool2_touched_obj)
+        
+        if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
+            tool_traj = [st[3:5] for st in self.s_traj]
+            min_dist = min([np.linalg.norm(np.array(st) - np.array(s_o_end)) for st in tool_traj])
+        else:
+            hand_traj = [sh[:2] for sh in self.s_traj]
+            min_dist = min([np.linalg.norm(np.array(sh) - np.array(s_o_end)) for sh in hand_traj])
+        
+        #print list(s[:-6]), [min_dist], list(np.array(s_o_end) - np.array(c))
+        res = list(s[:-6]) + [min_dist] + list(np.array(s_o_end) - np.array(c))
+        
+        #print "s env", res
         self.env.lower_env.reset() # reset arm and tools but not object
         self.env.top_env.move = 0 # tools have been reset so object must not follow them
         return res

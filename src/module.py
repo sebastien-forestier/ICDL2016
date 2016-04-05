@@ -227,12 +227,12 @@ class Module(Agent):
         
     def competence_reached(self, s):
         if self.sensorimotor_model.size() > 0:
-            return - self.sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)[0][0]
+            return self.sensorimotor_model.competence_for_context(s[:self.context_mode["context_n_dims"]])
         else:
             return - np.inf
         
     def competence_pt(self, m): return self.interest_model.competence_pt(m)
-    def interest_pt(self, m): return self.interest_model.interest_pt(m)
+    def interest_pt(self, m): return self.sensorimotor_model.interest_pt(m)
         
     def competence(self):        
         return self.interest_model.competence()

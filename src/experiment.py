@@ -47,8 +47,8 @@ class ToolsExperiment(Experiment):
             self.log_dir = log_dir
             self.log = log 
             
-        self.ag.subscribe('agentM', self)
-        self.ag.subscribe('agentS', self)
+#         self.ag.subscribe('agentM', self)
+#         self.ag.subscribe('agentS', self)
         self.ag.subscribe('babbling_module', self)
         self.ag.subscribe_topics_mids(['interest', 'competence', 'chidren_choice', 'im_update'], self)
         self.ag.subscribe_topics_mods(['im_update'], self)
@@ -63,8 +63,8 @@ class ToolsExperiment(Experiment):
         self.log = ExperimentLog(self.ag.conf, self.ag.expl_dims, self.ag.inf_dims)
         self.log.log_dir = self.log_dir
         self.evaluate_at(self.config.eval_at, self.testcases)
-        self.ag.subscribe('agentM', self)
-        self.ag.subscribe('agentS', self)
+#         self.ag.subscribe('agentM', self)
+#         self.ag.subscribe('agentS', self)
         self.ag.subscribe('babbling_module', self)
         self.ag.subscribe_topics_mod(['interest', 'competence', 'chidren_choice', 'im_update'], self)
         
@@ -73,7 +73,7 @@ class ToolsExperiment(Experiment):
 
         log = ExperimentLog()
         
-        keys=['agentM', 'agentS', 'babbling_module']
+        keys=['motor', 'sensori', 'babbling_module']
         for mid in config.modules.keys():
             keys.append('im_update_' + mid)
         

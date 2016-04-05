@@ -41,6 +41,7 @@ class DynamicEnvironment(Environment):
             plt.draw()
         
         Environment.__init__(self, m_mins, m_maxs, s_mins, s_maxs)
+        self.s_traj = None
                 
         if self.motor_traj_type == "DMP":
             self.init_motor_DMP(optim_initial_position, optim_end_position, default_motor_initial_position, default_motor_end_position)
@@ -113,6 +114,7 @@ class DynamicEnvironment(Environment):
     
     def compute_sensori_effect(self, m_traj):
         s = self.env.update(m_traj, reset=False, log=False)
+        self.s_traj = s
         y = np.array(s[:self.move_steps])
         if self.sensori_traj_type == "DMP":
             self.sensori_dmp.dmp.imitate_path(np.transpose(y))
