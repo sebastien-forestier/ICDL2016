@@ -41,7 +41,7 @@ xp_list = [
            "xp1", 
 ]
 
-log_dir = '/scratch/sforestier001/logs/' + start_date + pool_name + '-'
+log_dir = '/scratch/sforestier001/logs/' + start_date + '-' + pool_name + '-'
 
 
 

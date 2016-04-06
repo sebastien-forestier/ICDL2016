@@ -12,6 +12,7 @@ trial = sys.argv[3]
 if not os.path.exists(log_dir):
     os.mkdir(log_dir)
 
+raise ValueError(configs.keys())
 
 xp = ToolsExperiment(config=configs[config_name], context_mode=configs[config_name].context_mode, log_dir=log_dir)
     
