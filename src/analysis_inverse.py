@@ -8,11 +8,24 @@ from config import configs
 from explauto.utils import rand_bounds
 
 
+def strategy_used(s):
+    obj_end_pos_y = s[1] + s[-1]
+    tool1_moved = (abs(s[-6] - s[-4]) > 0.0001)
+    #tool2_moved = (abs(ms[-5] - ms[-3]) > 0.0001)
+    tool1_touched_obj = tool1_moved and (abs(s[-4] - obj_end_pos_y) < 0.0001)
+    #tool2_touched_obj = tool2_moved and (abs(ms[-3] - obj_end_pos_y) < 0.0001)
+    obj_moved = abs(s[-1]) > 0.0001
+    obj_moved_with_hand = obj_moved and (not tool1_touched_obj)# and (not tool2_touched_obj)
+    
+    if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
+        return "tool"
+    else:
+        return "hand"
+    
+    
+    
+
 def main(log_dir, config_name, trial):
-# log_dir = "/home/sforesti/scm/Flowers/ICCM2016/src/test_1T/"
-# config_log_name = "H-P-AMB-LCTC"
-# config_name = "H-P-AMB"
-#trial = 1
     
     config = configs[config_name]
     
@@ -20,7 +33,7 @@ def main(log_dir, config_name, trial):
     
     
     log = ExperimentLog(None, None, None)
-    for key in ["motor", "sensori", "im_update_mod1", "im_update_mod2", "im_update_mod3", "im_update_mod4"]:
+    for key in ["motor", "sensori"]:
         try:
             filename = log_dir + config_name + '/log{}-'.format(trial) + key + '-{}.pickle'.format(0)
             with open(filename, 'r') as f:
@@ -31,135 +44,156 @@ def main(log_dir, config_name, trial):
         
         
         
-    xp = ToolsExperiment(config, context_mode=config.context_mode)
-    xp.ag.fast_forward(log, forward_im=True)
+    iterations = [10000, 20000, 30000, 40000, 50000]
     
+    results_niter_2 = {}
+    results_niter_3 = {}
+    results_strategies_2 = {}
+    results_strategies_3 = {}
     
-    
-    s_space = "s_o"
-    print "s_space", s_space
-    
-    
-    
-    def strategy_used(s):
-        obj_end_pos_y = s[1] + s[-1]
-        tool1_moved = (abs(s[-6] - s[-4]) > 0.0001)
-        #tool2_moved = (abs(ms[-5] - ms[-3]) > 0.0001)
-        tool1_touched_obj = tool1_moved and (abs(s[-4] - obj_end_pos_y) < 0.0001)
-        #tool2_touched_obj = tool2_moved and (abs(ms[-3] - obj_end_pos_y) < 0.0001)
-        obj_moved = abs(s[-1]) > 0.0001
-        obj_moved_with_hand = obj_moved and (not tool1_touched_obj)# and (not tool2_touched_obj)
+    for iteration in iterations:
         
-        if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
-            return "tool"
-        else:
-            return "hand"
+        xp = ToolsExperiment(config, context_mode=config.context_mode)
+        
+        log_i = ExperimentLog(None, None, None)
+        log_i._logs["motor"] = log._logs["motor"][:iteration]
+        log_i._logs["sensori"] = log._logs["sensori"][:iteration]
+        
+        xp.ag.fast_forward(log_i, forward_im=False)
+        
+        s_space = "s_o"
+        
+        
+        
+        
+        
+        
+        
+        
+        problems_2 = dict(
+                      A=[-0.2, 0.7],
+                      B=[0., 0.7],
+                      C=[0.2, 0.7],
+                      )
+        
+        results_niter_2_i = dict(
+                      A=-1,
+                      B=-1,
+                      C=-1,
+                      )
+        
+        results_strategies_2_i = dict(
+                      A=[],
+                      B=[],
+                      C=[],
+                      )
+        
+        
+        problems_3 = dict(
+                      A=[-0.2, 1.1],
+                      B=[0., 1.2],
+                      C=[0.2, 1.1],
+                      )
+        
+        results_niter_3_i = dict(
+                      A=-1,
+                      B=-1,
+                      C=-1,
+                      )
+        
+        results_strategies_3_i = dict(
+                      A=[],
+                      B=[],
+                      C=[],
+                      )
+        
+        n_iter_max = 50
+        
+        
+        # Reachable contexts, learning
+    #     while True:
+    #         print
+    #         context =  [0, 1.2]
+    #         #context = rand_bounds(np.array([[-0.5, -0.5], [0.5, 0.5]]))[0]
+    #         sg = [0] + list(-np.array(context))
+    #         xp.env.env.env.top_env.pos = context
+    #         print "context", xp.env.get_current_context()
+    #         #print "ds goal", sg
+    #         m = xp.ag.inverse(s_space, sg, context=xp.env.get_current_context(), babbling=True, explore=None)[0]
+    #         sr = xp.env.update(m, reset=False)
+    #         xp.ag.perceive([sr], context=context)
+         
+        # Hreachable contexts, learning
+        for p2 in problems_2.keys():
+            context = problems_2[p2]
+            sg = [0] + list(-np.array(context))
+            xp.env.env.env.top_env.pos = context
+            print "context", xp.env.get_current_context()
+            #print "ds goal", sg
+            for i in range(n_iter_max):
+                context = xp.env.get_current_context()
+                m = xp.ag.inverse(s_space, sg, context=context, babbling=True, explore=None)[0]
+                print "m", m
+                sr = xp.env.update(m, reset=False)
+                print "s", sr
+                xp.ag.perceive([sr], context=context)
+                results_strategies_2_i[p2].append(strategy_used(sr))
+                if abs(sr[-1]) > 0.0001:
+                    results_niter_2_i[p2] = i
+                    break
+        #         error = np.linalg.norm(np.array(sr[-2:]) - np.array(context))
+        #         print "error", error
+        #         if error < 0.05:
+        #             break
+            #print "reached ms:", ms
+            
+            
+            
+        # UnHreachable contexts, learning
+        for p3 in problems_3.keys():
+            context = problems_3[p3]
+            sg = [0] + list(-np.array(context))
+            xp.env.env.env.top_env.pos = context
+            print "context", xp.env.get_current_context()
+            #print "ds goal", sg
+            for i in range(n_iter_max):
+                context = xp.env.get_current_context()
+                m = xp.ag.inverse(s_space, sg, context=context, babbling=True, explore=None)[0]
+                print "m", m
+                sr = xp.env.update(m, reset=False)
+                print "s", sr
+                xp.ag.perceive([sr], context=context)
+                results_strategies_3_i[p3].append(strategy_used(sr))
+                if abs(sr[-1]) > 0.0001:
+                    results_niter_3_i[p3] = i
+                    break
+            
+#         print
+#         print "results_2", results_niter_2, results_strategies_2
+#         print "results_3", results_niter_3, results_strategies_3
+#         
+        results_niter_2[iteration] = results_niter_2_i
+        results_niter_3[iteration] = results_niter_3_i
+        results_strategies_2[iteration] = results_strategies_2_i
+        results_strategies_3[iteration] = results_strategies_3_i
+        
     
-    
-    
-    
-    
-    
-    problems_2 = dict(
-                  A=[-0.2, 0.7],
-                  B=[0., 0.7],
-                  C=[0.2, 0.7],
-                  )
-    
-    results_niter_2 = dict(
-                  A=-1,
-                  B=-1,
-                  C=-1,
-                  )
-    
-    results_strategies_2 = dict(
-                  A=[],
-                  B=[],
-                  C=[],
-                  )
-    
-    
-    problems_3 = dict(
-                  A=[-0.2, 1.1],
-                  B=[0., 1.2],
-                  C=[0.2, 1.1],
-                  )
-    
-    results_niter_3 = dict(
-                  A=-1,
-                  B=-1,
-                  C=-1,
-                  )
-    
-    results_strategies_3 = dict(
-                  A=[],
-                  B=[],
-                  C=[],
-                  )
-    
-    n_iter_max = 40
-    
-    
-    # Reachable contexts, no learning
-    # while True:
-    #     print
-    #     context = hand_reachable_context()
-    #     sg = list(-np.array(context))
-    #     xp.env.env.env.top_env.pos = context
-    #     print "context", xp.env.get_current_context()
-    #     #print "ds goal", sg
-    #     m = xp.ag.inverse(s_space, sg, context=xp.env.get_current_context(), explore=False)[0]
-    #     sr = xp.env.update(m, reset=False)
+    with open(log_dir + config_name + '/results_niter_2-{}.pickle'.format(trial), 'wb') as f:
+        cPickle.dump(results_niter_2, f)
      
-    # Hreachable contexts, learning
-    for p2 in problems_2.keys():
-        context = problems_2[p2]
-        sg = [0] + list(-np.array(context))
-        xp.env.env.env.top_env.pos = context
-        print "context", xp.env.get_current_context()
-        #print "ds goal", sg
-        for i in range(n_iter_max):
-            context = xp.env.get_current_context()
-            m = xp.ag.inverse(s_space, sg, context=context, babbling=True, explore=None)[0]
-            print "m", m
-            sr = xp.env.update(m, reset=False)
-            print "s", sr
-            xp.ag.perceive([sr], context=context)
-            results_niter_2[p2] = i
-            results_strategies_2[p2].append(strategy_used(sr))
-            if abs(sr[-1]) > 0.0001:
-                break
-    #         error = np.linalg.norm(np.array(sr[-2:]) - np.array(context))
-    #         print "error", error
-    #         if error < 0.05:
-    #             break
-        #print "reached ms:", ms
+    with open(log_dir + config_name + '/results_niter_3-{}.pickle'.format(trial), 'wb') as f:
+        cPickle.dump(results_niter_3, f)
         
-        
-        
-    # UnHreachable contexts, learning
-    for p3 in problems_3.keys():
-        context = problems_3[p3]
-        sg = [0] + list(-np.array(context))
-        xp.env.env.env.top_env.pos = context
-        print "context", xp.env.get_current_context()
-        #print "ds goal", sg
-        for i in range(n_iter_max):
-            context = xp.env.get_current_context()
-            m = xp.ag.inverse(s_space, sg, context=context, babbling=True, explore=None)[0]
-            print "m", m
-            sr = xp.env.update(m, reset=False)
-            print "s", sr
-            xp.ag.perceive([sr], context=context)
-            results_niter_3[p3] = i
-            results_strategies_3[p3].append(strategy_used(sr))
-            if abs(sr[-1]) > 0.0001:
-                break
-        
-    print
-    print "results_2", results_niter_2, results_strategies_2
-    print "results_3", results_niter_3, results_strategies_3
-    
+    with open(log_dir + config_name + '/results_strategies_2-{}.pickle'.format(trial), 'wb') as f:
+        cPickle.dump(results_strategies_2, f)
+     
+    with open(log_dir + config_name + '/results_strategies_3-{}.pickle'.format(trial), 'wb') as f:
+        cPickle.dump(results_strategies_3, f)
+     
+    print "results_niter_2", results_niter_2
+    print "results_niter_3", results_niter_3
+    print "results_strategies_2", results_strategies_2
+    print "results_strategies_3", results_strategies_3
     
 if __name__ == "__main__":
     

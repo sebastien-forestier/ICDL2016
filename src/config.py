@@ -50,7 +50,7 @@ class Config(object):
         
         ################################### AGENT CONFIG ###################################
         
-        self.n_dyn_motors = 4
+        self.n_dyn_motors = 3
         self.n_dmps = self.n_dyn_motors
         self.dmp_use_initial = False
         self.dmp_use_goal = True
@@ -74,7 +74,7 @@ class Config(object):
         self.move_steps = 50
         self.motor_dims = range(self.motor_n_dims)
         
-        self.s_n_dims = 20
+        self.s_n_dims = 17
         
         self.sensori_dims = range(self.motor_n_dims, self.motor_n_dims + self.s_n_dims)
         self.used_dims = self.motor_n_dims + self.s_n_dims
@@ -133,11 +133,11 @@ class Config(object):
                                           motor_babbling_n_iter=self.motor_babbling_n_iter),
                                 )
         elif self.hierarchy_type == 1:
-            self.m_spaces = dict(m_arm=range(12))
-            self.s_spaces = dict(s_h=range(self.motor_n_dims + self.n_context_dims + 0, self.motor_n_dims + self.n_context_dims + 9),
-                                 s_t1=range(self.motor_n_dims + self.n_context_dims + 9, self.motor_n_dims + self.n_context_dims + 15),
+            self.m_spaces = dict(m_arm=range(9))
+            self.s_spaces = dict(s_h=range(self.motor_n_dims + self.n_context_dims + 0, self.motor_n_dims + self.n_context_dims + 6),
+                                 s_t1=range(self.motor_n_dims + self.n_context_dims + 6, self.motor_n_dims + self.n_context_dims + 12),
                                  #s_t2=range(self.motor_n_dims + self.n_context_dims + 15, self.motor_n_dims + self.n_context_dims + 21),
-                                 s_o=range(self.motor_n_dims, self.motor_n_dims + 2) + range(self.motor_n_dims + self.n_context_dims + 15, self.motor_n_dims + self.n_context_dims + 18))
+                                 s_o=range(self.motor_n_dims, self.motor_n_dims + 2) + range(self.motor_n_dims + self.n_context_dims + 12, self.motor_n_dims + self.n_context_dims + 15))
 
             self.modules = dict(mod1 = dict(m = self.m_spaces["m_arm"],
                                           s = self.s_spaces["s_h"],     
@@ -269,7 +269,7 @@ class Config(object):
         
         ################################### Env CONFIG ###################################
                 
-        self.max_param = 500. # max DMP weight 
+        self.max_param = 300. # max DMP weight 
         self.max_params = self.max_param * np.ones((self.n_dmps * self.n_bfs,))  
 
         if self.dmp_use_initial: 
@@ -304,8 +304,8 @@ class Config(object):
         self.m_mins = [-1.] * (self.n_dyn_motors * (self.n_bfs+1))
         self.m_maxs = [1.] * (self.n_dyn_motors * (self.n_bfs+1))
         
-        self.s_mins = [-1.5] * (20)
-        self.s_maxs = [1.5] * (20)
+        self.s_mins = [-1.5] * (17)
+        self.s_maxs = [1.5] * (17)
         
         ################################### Process CONFIG ###################################
         
@@ -326,32 +326,25 @@ iterations = 50000
 
 config_list = {"xp1":[#"F-RmB",
                       #"F-RGB",
-                      "H-RMB",
-                      "H-P-AMB",
-                      "H-GR-AMB",
-                      "H-P-AMB-CTC",
+                      "H-AMB-RDM",
+                      "H-AMB-GC",
+                      "H-AMB-MC",
+                      "H-AMB-GI",
+                      "H-AMB-MI",
                       ]}
 
-config = Config(name="F-RmB", hierarchy_type=0, babbling_name="motor", iterations=iterations)
+
+config = Config(name="H-AMB-GC", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="competence", supervisor_ccl="local", iterations=iterations)
 configs[config.name] = config
 
-config = Config(name="F-RGB", hierarchy_type=0, iterations=iterations)
+config = Config(name="H-AMB-MC", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="competence_prop", supervisor_ccl="local", iterations=iterations)
 configs[config.name] = config
 
-config = Config(name="H-P-AMB", hierarchy_type=1, supervisor_name="interest", iterations=iterations)
+config = Config(name="H-AMB-GI", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="interest", supervisor_ccl="local", iterations=iterations)
 configs[config.name] = config
 
-config = Config(name="H-RMB", hierarchy_type=1, supervisor_name="random", iterations=iterations)
+config = Config(name="H-AMB-MI", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="interest_prop", supervisor_ccl="local", iterations=iterations)
 configs[config.name] = config
 
-config = Config(name="H-GR-AMB", hierarchy_type=1, supervisor_name="interest_greedy", iterations=iterations)
-configs[config.name] = config
-
-config = Config(name="H-P-AMB-CTC", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="interest_prop", supervisor_ccl="global", iterations=iterations)
-configs[config.name] = config
-
-config = Config(name="H-P-AMB-LCTC", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="interest_prop", supervisor_ccl="local", iterations=iterations)
-configs[config.name] = config
-
-config = Config(name="H-P-AMB-RDM", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="random", supervisor_ccl="global", iterations=iterations)
+config = Config(name="H-AMB-RDM", hierarchy_type=1, supervisor_name="interest", supervisor_ccm="random", supervisor_ccl="global", iterations=iterations)
 configs[config.name] = config

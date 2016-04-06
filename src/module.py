@@ -221,7 +221,7 @@ class Module(Agent):
         if self.t >= self.mconf['motor_babbling_n_iter']:
             if self.im_mode == "sg" or self.im_mode == "sp":
                 self.interest_model.update(hstack((m, self.s)), hstack((m, s)))
-                self.emit('im_update_' + self.mid, (hstack((m, self.s)), hstack((m, s))))
+                #self.emit('im_update_' + self.mid, (hstack((m, self.s)), hstack((m, s))))
             else:
                 raise NotImplementedError
         

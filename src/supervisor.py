@@ -78,7 +78,7 @@ class Supervisor(Observable):
         if mode == 'random':
             s_space = np.random.choice(self.interests.keys())
         elif mode == 'greedy':
-            eps = 0.1
+            eps = 0.2
             if np.random.random() < eps:
                 s_space = np.random.choice(self.interests.keys())
             else:
@@ -232,7 +232,7 @@ class Supervisor(Observable):
             self.modules[mid].update_sm(self.modules[mid].get_m(ms), self.modules[mid].get_s(ms))
             
         #print 'ms2', ms
-        obj_end_pos_y = ms[13] + ms[-1]
+        obj_end_pos_y = ms[10] + ms[-1]
         tool1_moved = (abs(ms[-6] - ms[-4]) > 0.0001)
         #tool2_moved = (abs(ms[-5] - ms[-3]) > 0.0001)
         tool1_touched_obj = tool1_moved and (abs(ms[-4] - obj_end_pos_y) < 0.0001)
@@ -282,6 +282,29 @@ class Supervisor(Observable):
             else:
                 competences = [self.modules[pmid].competence() for pmid in possible_mids]
             mid = possible_mids[greedy(competences, eps)]
+            return mid
+        
+        if mode == "competence_prop":
+            if local:
+#                 for mid in ["mod2", "mod5", 'mod6']:
+#                     dists, idxs = self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)
+#                     print mid, dists, idxs, self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.get_xy(idxs[0]), y, s
+                competences = [self.modules[pmid].competence_reached(s) for pmid in possible_mids]
+                #print "choose space child", competences
+#                 print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
+            else:
+                competences = [self.modules[pmid].competence() for pmid in possible_mids]
+            mid = possible_mids[prop_choice(competences, eps)]
+            return mid
+            
+        elif mode == "interest":  
+            if local=="local":
+                interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
+            else:
+                interests = [self.modules[pmid].interest() for pmid in possible_mids]
+            #print "choose space child", interests
+            mid = possible_mids[greedy(interests, eps=eps)]
+            #print "chosen mid", mid
             return mid
             
         elif mode == "interest_prop":  
