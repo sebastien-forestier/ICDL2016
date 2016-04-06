@@ -10,7 +10,7 @@ import numpy as np
 
 from config import config_list, configs
 
-path = '/home/sforestier/software/IROS2016/src/'
+path = '/home/sforestier/software/ICCM2016/src/'
 
 start_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
