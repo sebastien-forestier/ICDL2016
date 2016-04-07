@@ -1,14 +1,21 @@
-import os
+import cPickle
+import numpy as np
 from config import config_list
-from multiprocessing import Process
-from analysis_explo import main as main_explo
-from analysis_events import main as main_events
-from analysis_choice import main as main_choice
+import os
+import sys
+
+
+########################################################
+################### PARAMS #############################
+########################################################
+d = "2016-04-06_17-47-28-ICCM-xp1"
+trials = range(1,11)
+########################################################
+########################################################
+########################################################
 
 
 
-d = "2016-01-25_11-33-06-Tools-cogsci-xp1"
-d = "2016-01-26_14-37-37-Tools-cogsci-xp1"
 
 
 if os.environ.has_key("AVAKAS") and os.environ["AVAKAS"]:
@@ -16,30 +23,44 @@ if os.environ.has_key("AVAKAS") and os.environ["AVAKAS"]:
 else:
     pref = "/home/sforesti/avakas"
     
-log_dirs = {"xp1":pref + '/scratch/sforestier001/logs/' + d
-}
+log_dir = pref + '/scratch/sforestier001/logs/' + d + '/'
 
 
 
-processes = []
-
-log_dir = log_dirs["xp1"] + "/"
-#log_dir = '/home/sforesti/scm/Flowers/explaupoppydiva/scripts/cogsci2016/test_dmp2/'
 
 
-try:
-    os.mkdir(log_dir + "img")
-except:
-    pass
+n_logs = 1
 
-for config in config_list["xp1"]:        
-    processes.append(Process(target = main_explo, args=(log_dir, config)))
-    processes.append(Process(target = main_events, args=(log_dir, config)))
-    processes.append(Process(target = main_choice, args=(log_dir, config)))
 
-print "Begin Explo and Events analysis"
-for p in processes:
-    p.start()
-for p in processes:
-    p.join()
-print "Finished Explo and Events analysis"
+
+for trial in trials: 
+    print trial
+
+    for config_name in config_list["xp1"]:
+    
+        print config_name
+    
+
+        with open(log_dir + config_name + "/results_niter_2-{}.pickle".format(trial), 'r') as f:
+            results_niter_2 = cPickle.load(f)
+            f.close()
+        
+        with open(log_dir + config_name + "/results_niter_3-{}.pickle".format(trial), 'r') as f:
+            results_niter_3 = cPickle.load(f)
+            f.close()
+        
+        with open(log_dir + config_name + "/results_strategies_2-{}.pickle".format(trial), 'r') as f:
+            results_strategies_2 = cPickle.load(f)
+            f.close()
+        
+        with open(log_dir + config_name + "/results_strategies_3-{}.pickle".format(trial), 'r') as f:
+            results_strategies_3 = cPickle.load(f)
+            f.close()
+        
+                 
+        print "results_niter_2", results_niter_2
+        print "results_niter_3", results_niter_3
+        print "results_strategies_2", results_strategies_2
+        print "results_strategies_3", results_strategies_3
+    
+    
