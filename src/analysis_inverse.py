@@ -29,7 +29,7 @@ def main(log_dir, config_name, trial):
     
     config = configs[config_name]
     
-    config.env_cfg["env_conf"]["gui"]= True
+    #config.env_cfg["env_conf"]["gui"]= True
     
     
     log = ExperimentLog(None, None, None)
