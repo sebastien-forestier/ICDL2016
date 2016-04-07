@@ -29,7 +29,7 @@ def main(log_dir, config_name, trial):
     
     config = configs[config_name]
     
-    #config.env_cfg["env_conf"]["gui"]= True
+    config.env_cfg["env_conf"]["gui"]= True
     
     
     log = ExperimentLog(None, None, None)
@@ -44,7 +44,7 @@ def main(log_dir, config_name, trial):
         
         
         
-    iterations = [10000, 20000, 30000, 40000, 50000]
+    iterations = [1000, 2000, 3000, 4000, 5000]
     
     results_niter_2 = {}
     results_niter_3 = {}
@@ -52,6 +52,7 @@ def main(log_dir, config_name, trial):
     results_strategies_3 = {}
     
     for iteration in iterations:
+        print iteration
         
         xp = ToolsExperiment(config, context_mode=config.context_mode)
         
@@ -90,9 +91,9 @@ def main(log_dir, config_name, trial):
         
         
         problems_3 = dict(
-                      A=[-0.2, 1.1],
-                      B=[0., 1.2],
-                      C=[0.2, 1.1],
+                      A=[-0.3, 1.2],
+                      B=[0., 1.25],
+                      C=[0.3, 1.2],
                       )
         
         results_niter_3_i = dict(
@@ -107,7 +108,7 @@ def main(log_dir, config_name, trial):
                       C=[],
                       )
         
-        n_iter_max = 50
+        n_iter_max = 40
         
         
         # Reachable contexts, learning
@@ -123,8 +124,10 @@ def main(log_dir, config_name, trial):
     #         sr = xp.env.update(m, reset=False)
     #         xp.ag.perceive([sr], context=context)
          
+         
+        print "----- Phase 2"
         # Hreachable contexts, learning
-        for p2 in problems_2.keys():
+        for p2 in sorted(problems_2.keys()):
             context = problems_2[p2]
             sg = [0] + list(-np.array(context))
             xp.env.env.env.top_env.pos = context
@@ -141,16 +144,12 @@ def main(log_dir, config_name, trial):
                 if abs(sr[-1]) > 0.0001:
                     results_niter_2_i[p2] = i
                     break
-        #         error = np.linalg.norm(np.array(sr[-2:]) - np.array(context))
-        #         print "error", error
-        #         if error < 0.05:
-        #             break
-            #print "reached ms:", ms
             
             
             
+        print "----- Phase 3"
         # UnHreachable contexts, learning
-        for p3 in problems_3.keys():
+        for p3 in sorted(problems_3.keys()):
             context = problems_3[p3]
             sg = [0] + list(-np.array(context))
             xp.env.env.env.top_env.pos = context
@@ -168,10 +167,6 @@ def main(log_dir, config_name, trial):
                     results_niter_3_i[p3] = i
                     break
             
-#         print
-#         print "results_2", results_niter_2, results_strategies_2
-#         print "results_3", results_niter_3, results_strategies_3
-#         
         results_niter_2[iteration] = results_niter_2_i
         results_niter_3[iteration] = results_niter_3_i
         results_strategies_2[iteration] = results_strategies_2_i
