@@ -4,7 +4,6 @@ from config import config_list
 import os
 import sys
 
-
 ########################################################
 ################### PARAMS #############################
 ########################################################
@@ -26,6 +25,7 @@ else:
 log_dir = pref + '/scratch/sforestier001/logs/' + d + '/'
 
 
+results = {}
 
 
 
@@ -33,12 +33,13 @@ n_logs = 1
 
 
 
-for trial in trials: 
-    print trial
+for config_name in config_list["xp1"]:
+    print config_name
+    results[config_name] = {}
 
-    for config_name in config_list["xp1"]:
-    
-        print config_name
+    for trial in trials: 
+        print trial
+        results[config_name][trial] = {}
     
 
         with open(log_dir + config_name + "/results_niter_2-{}.pickle".format(trial), 'r') as f:
@@ -58,9 +59,13 @@ for trial in trials:
             f.close()
         
                  
-        print "results_niter_2", results_niter_2
-        print "results_niter_3", results_niter_3
-        print "results_strategies_2", results_strategies_2
-        print "results_strategies_3", results_strategies_3
+        results[config_name][trial]["results_niter_2"] = results_niter_2
+        results[config_name][trial]["results_niter_3"] = results_niter_3
+        results[config_name][trial]["results_strategies_2"] = results_strategies_2
+        results[config_name][trial]["results_strategies_3"] = results_strategies_3
+        
+
     
+with open(log_dir + 'results.pickle', 'wb') as f:
+    cPickle.dump(results, f)
     
