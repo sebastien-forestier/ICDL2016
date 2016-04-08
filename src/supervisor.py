@@ -277,11 +277,12 @@ class Supervisor(Observable):
 #                     dists, idxs = self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.nn_y(s, k=1)
 #                     print mid, dists, idxs, self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset.get_xy(idxs[0]), y, s
                 competences = [self.modules[pmid].competence_reached(s) for pmid in possible_mids]
-                #print "choose space child", competences
 #                 print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
             else:
                 competences = [self.modules[pmid].competence() for pmid in possible_mids]
+            print "choose space child", competences
             mid = possible_mids[greedy(competences, eps)]
+            print "chosen mid", mid
             return mid
         
         if mode == "competence_prop":
