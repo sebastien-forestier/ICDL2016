@@ -319,7 +319,9 @@ class Supervisor(Observable):
             return mid
             
         elif mode == "random":   
+            print "random possible:", possible_mids
             mid = np.random.choice(possible_mids)
+            print "chosen mid", mid
             self.chosen_modules[mid] = self.chosen_modules[mid] + 1
             return mid
         
