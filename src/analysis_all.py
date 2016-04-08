@@ -239,7 +239,7 @@ elif mode == "success":
         plt.xlim([-0.5,2.5])
         plt.ylim([0,1])
         plt.xlabel("Problem")
-        plt.ylabel("F hand")
+        plt.ylabel("Success")
         plt.xticks([0,1,2],problems)
         
         

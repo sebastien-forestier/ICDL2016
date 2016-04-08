@@ -93,9 +93,9 @@ def main(log_dir, config_name, trial):
         
         
         problems_3 = dict(
-                      A=[-0.15, 1.25],
-                      B=[0., 1.3],
-                      C=[0.15, 1.25],
+                      A=[-0.1, 1.2],
+                      B=[0., 1.25],
+                      C=[0.1, 1.2],
                       )
         
         results_niter_3_i = dict(
