@@ -270,7 +270,7 @@ class Supervisor(Observable):
             mid = possible_mids[0]  
             return mid 
         
-        eps = 0.2
+        eps = 0.05
         if mode == "competence":
             if local:
 #                 for mid in ["mod2", "mod5", 'mod6']:
