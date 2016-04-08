@@ -76,16 +76,15 @@ if mode == "retrieve":
                 with open(log_dir + config_name + "/results_strategies_3-{}.pickle".format(trial), 'r') as f:
                     results_strategies_3 = cPickle.load(f)
                     f.close()
-            
+
+                
+                         
+                results[config_name][trial]["results_niter_2"] = results_niter_2
+                results[config_name][trial]["results_niter_3"] = results_niter_3
+                results[config_name][trial]["results_strategies_2"] = results_strategies_2
+                results[config_name][trial]["results_strategies_3"] = results_strategies_3
             except:
-                print "File not found for", config_name, trial
-                     
-            results[config_name][trial]["results_niter_2"] = results_niter_2
-            results[config_name][trial]["results_niter_3"] = results_niter_3
-            results[config_name][trial]["results_strategies_2"] = results_strategies_2
-            results[config_name][trial]["results_strategies_3"] = results_strategies_3
-            
-    
+                print "File not found", config_name, trial
         
     with open(log_dir + 'results.pickle', 'wb') as f:
         cPickle.dump(results, f)
