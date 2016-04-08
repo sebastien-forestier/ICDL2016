@@ -302,9 +302,9 @@ class Supervisor(Observable):
                 interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
             else:
                 interests = [self.modules[pmid].interest() for pmid in possible_mids]
-            #print "choose space child", interests
+            print "choose space child", interests
             mid = possible_mids[greedy(interests, eps=eps)]
-            #print "chosen mid", mid
+            print "chosen mid", mid
             return mid
             
         elif mode == "interest_prop":  
@@ -312,9 +312,9 @@ class Supervisor(Observable):
                 interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
             else:
                 interests = [self.modules[pmid].interest() for pmid in possible_mids]
-            #print "choose space child", interests
+            print "choose space child", interests
             mid = possible_mids[prop_choice(interests, eps=eps)]
-            #print "chosen mid", mid
+            print "chosen mid", mid
             return mid
             
         elif mode == "random":   
@@ -374,6 +374,10 @@ class Supervisor(Observable):
         
         #print m_deps
         
+        lower_explore = not (hasattr(mod.sensorimotor_model, "context_was_new") and mod.sensorimotor_model.context_was_new)
+        if not lower_explore:
+            explore = False
+        #print "produce module", mid, "lower_explore", lower_explore, "explore", explore
         
         if self.choose_children_mode == 'interest_babbling':
             if babbling:

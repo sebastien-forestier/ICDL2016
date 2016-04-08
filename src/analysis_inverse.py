@@ -18,8 +18,10 @@ def strategy_used(s):
     obj_moved_with_hand = obj_moved and (not tool1_touched_obj)# and (not tool2_touched_obj)
     
     if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
+        print "tool moved"
         return "tool"
     else:
+        print "no tool moved"
         return "hand"
     
     
@@ -44,7 +46,7 @@ def main(log_dir, config_name, trial):
         
         
         
-    iterations = [1000, 2000, 3000, 4000, 5000]
+    iterations = [1000, 2000, 5000, 10000]
     
     results_niter_2 = {}
     results_niter_3 = {}
@@ -108,7 +110,7 @@ def main(log_dir, config_name, trial):
                       C=[],
                       )
         
-        n_iter_max = 40
+        n_iter_max = 50
         
         
         # Reachable contexts, learning
@@ -131,7 +133,7 @@ def main(log_dir, config_name, trial):
             context = problems_2[p2]
             sg = [0] + list(-np.array(context))
             xp.env.env.env.top_env.pos = context
-            print "context", xp.env.get_current_context()
+            print "\n-------------- new context", xp.env.get_current_context()
             #print "ds goal", sg
             for i in range(n_iter_max):
                 context = xp.env.get_current_context()
@@ -153,7 +155,7 @@ def main(log_dir, config_name, trial):
             context = problems_3[p3]
             sg = [0] + list(-np.array(context))
             xp.env.env.env.top_env.pos = context
-            print "context", xp.env.get_current_context()
+            print "\n-------------- new context", xp.env.get_current_context()
             #print "ds goal", sg
             for i in range(n_iter_max):
                 context = xp.env.get_current_context()
