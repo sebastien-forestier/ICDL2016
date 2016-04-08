@@ -19,7 +19,7 @@ colors = bmap.mpl_colors
 ########################################################
 ################### PARAMS #############################
 ########################################################
-d = "2016-04-08_15-06-58-ICCM-xp1"
+d = "2016-04-08_15-49-06-ICCM-xp1"
 trials = range(1,201)
 problems = ["A", "B", "C"]
 ages = [1000, 2000, 5000, 10000]
@@ -327,4 +327,96 @@ elif mode == "all":
     print all_3
         
     plt.show(block=True)
+    
+
+    
+elif mode == "waves":
+    
+    
+    with open(log_dir + "results.pickle", 'r') as f:
+        results = cPickle.load(f)
+        f.close()
+        
+        
+        
+    #print results
+        
+        
+    # Analysis of first attempt: percentage of hand strategy on first attempt of phases 2 and 3, depending on cdt, problem, age, averaged accross trials
+    waves_2 = {}
+    waves_3 = {}
+    
+    for config_name in config_list["xp1"]:
+        print config_name
+        waves_2[config_name] = {}
+        waves_3[config_name] = {}
+    
+        
+        
+        for age in ages:
+            
+            waves_2[config_name][age] = [[], []]
+            waves_3[config_name][age] = [[], []]
+            
+            for trial in trials: 
+            
+                if results[config_name][trial]["results_niter_2"][age]["A"] >= 0:
+                    p_success = "A"
+                elif results[config_name][trial]["results_niter_2"][age]["B"] >= 0:
+                    p_success = "B"
+                elif results[config_name][trial]["results_niter_2"][age]["C"] >= 0:
+                    p_success = "C"
+                else:
+                    p_success = "D"
+                    
+                if p_success == "A":
+                    for problem in ["B", "C"]:
+                        waves_2[config_name][age][1] += results[config_name][trial]["results_strategies_2"][age][problem]
+                elif p_success == "B":
+                    for problem in ["C"]:
+                        waves_2[config_name][age][1] += results[config_name][trial]["results_strategies_2"][age][problem]
+                    for problem in ["A"]:
+                        waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
+                elif p_success == "C":
+                    for problem in ["A", "B"]:
+                        waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
+                elif p_success == "D":
+                    for problem in ["A", "B", "C"]:
+                        waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
+                        
+                        
+                if results[config_name][trial]["results_niter_3"][age]["A"] >= 0:
+                    p_success = "A"
+                elif results[config_name][trial]["results_niter_3"][age]["B"] >= 0:
+                    p_success = "B"
+                elif results[config_name][trial]["results_niter_3"][age]["C"] >= 0:
+                    p_success = "C"
+                else:
+                    p_success = "D"
+                    
+                if p_success == "A":
+                    for problem in ["B", "C"]:
+                        waves_3[config_name][age][1] += results[config_name][trial]["results_strategies_3"][age][problem]
+                elif p_success == "B":
+                    for problem in ["C"]:
+                        waves_3[config_name][age][1] += results[config_name][trial]["results_strategies_3"][age][problem]
+                    for problem in ["A"]:
+                        waves_3[config_name][age][0] += results[config_name][trial]["results_strategies_3"][age][problem]
+                elif p_success == "C":
+                    for problem in ["A", "B"]:
+                        waves_3[config_name][age][0] += results[config_name][trial]["results_strategies_3"][age][problem]
+                elif p_success == "D":
+                    for problem in ["A", "B", "C"]:
+                        waves_3[config_name][age][0] += results[config_name][trial]["results_strategies_3"][age][problem]
+                        
+
+            waves_2[config_name][age][0] = -1. if len(waves_2[config_name][age][0]) == 0 else len([strat for strat in waves_2[config_name][age][0] if strat == "hand"]) / float(len(waves_2[config_name][age][0]))
+            waves_2[config_name][age][1] = -1. if len(waves_2[config_name][age][1]) == 0 else len([strat for strat in waves_2[config_name][age][1] if strat == "hand"]) / float(len(waves_2[config_name][age][1]))
+            waves_3[config_name][age][0] = -1. if len(waves_3[config_name][age][0]) == 0 else len([strat for strat in waves_3[config_name][age][0] if strat == "hand"]) / float(len(waves_3[config_name][age][0]))
+            waves_3[config_name][age][1] = -1. if len(waves_3[config_name][age][1]) == 0 else len([strat for strat in waves_3[config_name][age][1] if strat == "hand"]) / float(len(waves_3[config_name][age][1]))
+            
+        
+    print waves_2
+    print waves_3
+        
     
