@@ -7,12 +7,12 @@ import sys
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import scipy.stats
-import brewer2mpl
-    
-    
-    
-bmap = brewer2mpl.get_map('Dark2', 'qualitative', 6)
-colors = bmap.mpl_colors
+# import brewer2mpl
+#     
+#     
+#     
+# bmap = brewer2mpl.get_map('Dark2', 'qualitative', 6)
+# colors = bmap.mpl_colors
 
 
 
@@ -32,7 +32,7 @@ ages = [1000, 2000, 5000, 10000]
 if os.environ.has_key("AVAKAS") and os.environ["AVAKAS"]:
     pref = ""
 else:
-    pref = "/home/sforesti/avakas"
+    pref = "/home/seb/avakas"
     
 log_dir = pref + '/scratch/sforestier001/logs/' + d + '/'
     

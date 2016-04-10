@@ -325,7 +325,7 @@ class ICCM2016Environment(DynamicEnvironment):
 #             #raise
 #         elif obj_moved_with_hand:
 #             print "object moved by hand"
-#             
+             
         
         if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
             tool_traj = [st[2:4] for st in self.s_traj]

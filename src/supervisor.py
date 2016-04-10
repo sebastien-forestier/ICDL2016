@@ -37,6 +37,8 @@ class Supervisor(Observable):
             
         self.mid_control = ''
         self.last_space_children_choices = {}
+        self.credit_tool_move = {}
+        self.credit_hand_move = {}
         
         self.hierarchy = Hierarchy() # Build Hierarchy
         for motor_space in self.config.m_spaces.values():
@@ -48,6 +50,8 @@ class Supervisor(Observable):
             
         for mid in self.modules.keys():
             self.last_space_children_choices[mid] = Queue.Queue()
+            self.credit_tool_move[mid] = 0
+            self.credit_hand_move[mid] = 0
             
         
     def init_module(self, mid):
@@ -100,6 +104,8 @@ class Supervisor(Observable):
                 print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
                 print "im db n points", [len(self.modules[mid].interest_model.data_xc) for mid in self.modules.keys()]
                 print self.chosen_modules
+                print "made tool moved object", self.credit_tool_move
+                print "made hand moved object", self.credit_hand_move
         
         self.chosen_spaces[s_space] = self.chosen_spaces[s_space] + 1
         return s_space
@@ -239,6 +245,12 @@ class Supervisor(Observable):
         #tool2_touched_obj = tool2_moved and (abs(ms[-3] - obj_end_pos_y) < 0.0001)
         obj_moved = abs(ms[-1]) > 0.0001
         obj_moved_with_hand = obj_moved and (not tool1_touched_obj)# and (not tool2_touched_obj)
+        if tool1_touched_obj:
+            if not self.mid_control  == '': 
+                self.credit_tool_move[self.mid_control] += 1
+        if obj_moved_with_hand:
+            if not self.mid_control  == '': 
+                self.credit_hand_move[self.mid_control] += 1
         
         if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
             self.modules["mod4"].update_sm(self.modules["mod4"].get_m(ms), self.modules["mod4"].get_s(ms))

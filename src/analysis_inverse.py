@@ -127,25 +127,25 @@ def main(log_dir, config_name, trial):
     #         xp.ag.perceive([sr], context=context)
          
          
-        print "----- Phase 2"
-        # Hreachable contexts, learning
-        for p2 in sorted(problems_2.keys()):
-            context = problems_2[p2]
-            sg = [0] + list(-np.array(context))
-            xp.env.env.env.top_env.pos = context
-            print "\n-------------- new context", xp.env.get_current_context()
-            #print "ds goal", sg
-            for i in range(n_iter_max):
-                context = xp.env.get_current_context()
-                m = xp.ag.inverse(s_space, sg, context=context, babbling=True, explore=None)[0]
-                print "m", m
-                sr = xp.env.update(m, reset=False)
-                print "s", sr
-                xp.ag.perceive([sr], context=context)
-                results_strategies_2_i[p2].append(strategy_used(sr))
-                if abs(sr[-1]) > 0.0001:
-                    results_niter_2_i[p2] = i
-                    break
+#         print "----- Phase 2"
+#         # Hreachable contexts, learning
+#         for p2 in sorted(problems_2.keys()):
+#             context = problems_2[p2]
+#             sg = [0] + list(-np.array(context))
+#             xp.env.env.env.top_env.pos = context
+#             print "\n-------------- new context", xp.env.get_current_context()
+#             #print "ds goal", sg
+#             for i in range(n_iter_max):
+#                 context = xp.env.get_current_context()
+#                 m = xp.ag.inverse(s_space, sg, context=context, babbling=True, explore=None)[0]
+#                 print "m", m
+#                 sr = xp.env.update(m, reset=False)
+#                 print "s", sr
+#                 xp.ag.perceive([sr], context=context)
+#                 results_strategies_2_i[p2].append(strategy_used(sr))
+#                 if abs(sr[-1]) > 0.0001:
+#                     results_niter_2_i[p2] = i
+#                     break
             
             
             
@@ -169,24 +169,24 @@ def main(log_dir, config_name, trial):
                     results_niter_3_i[p3] = i
                     break
             
-        results_niter_2[iteration] = results_niter_2_i
+        #results_niter_2[iteration] = results_niter_2_i
         results_niter_3[iteration] = results_niter_3_i
-        results_strategies_2[iteration] = results_strategies_2_i
+        #results_strategies_2[iteration] = results_strategies_2_i
         results_strategies_3[iteration] = results_strategies_3_i
         
     
     with open(log_dir + config_name + '/results-{}.pickle'.format(trial), 'wb') as f:
         cPickle.dump(dict(
-                          results_niter_2=results_niter_2,
+                          #results_niter_2=results_niter_2,
                           results_niter_3=results_niter_3,
-                          results_strategies_2=results_strategies_2,
+                          #results_strategies_2=results_strategies_2,
                           results_strategies_3=results_strategies_3
                           ), f)
      
      
-    print "results_niter_2", results_niter_2
+    #print "results_niter_2", results_niter_2
     print "results_niter_3", results_niter_3
-    print "results_strategies_2", results_strategies_2
+    #print "results_strategies_2", results_strategies_2
     print "results_strategies_3", results_strategies_3
     
 if __name__ == "__main__":
