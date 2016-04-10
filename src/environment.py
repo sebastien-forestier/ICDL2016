@@ -13,16 +13,16 @@ from explauto.environment.environment import Environment
 from explauto.environment.simple_arm.simple_arm import joint_positions
 from explauto.utils.utils import rand_bounds
 
-import brewer2mpl
-bmap = brewer2mpl.get_map('Dark2', 'qualitative', 6)
-colors = bmap.mpl_colors
- 
-colors_config = {
-                 "stick":colors[3],
-                 "gripper":colors[1],
-                 "magnetic":colors[2],
-                 "scratch":colors[4],
-                 }
+# import brewer2mpl
+# bmap = brewer2mpl.get_map('Dark2', 'qualitative', 6)
+# colors = bmap.mpl_colors
+#  
+# colors_config = {
+#                  "stick":colors[3],
+#                  "gripper":colors[1],
+#                  "magnetic":colors[2],
+#                  "scratch":colors[4],
+#                  }
 
 class ArmEnvironment(Environment):
     use_process = True
@@ -244,7 +244,7 @@ class ICCM2016Environment(DynamicEnvironment):
                           s_mins = [-2., -2.], # new pos
                           s_maxs = [2., 2.],
                           object_tol_hand = 0.2, 
-                          object_tol_tool = 0.1,
+                          object_tol_tool = 0.05,
                           bounds = np.array([[-0.5, -0.5],
                                                  [0.5, 0.5]]))
         
@@ -322,9 +322,10 @@ class ICCM2016Environment(DynamicEnvironment):
 #             print "tool moved"
 #         if tool1_touched_obj:
 #             print "object moved by tool"
+#             #raise
 #         elif obj_moved_with_hand:
 #             print "object moved by hand"
-            
+#             
         
         if tool1_touched_obj or (tool1_moved and not obj_moved_with_hand):
             tool_traj = [st[2:4] for st in self.s_traj]

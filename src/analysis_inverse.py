@@ -175,17 +175,14 @@ def main(log_dir, config_name, trial):
         results_strategies_3[iteration] = results_strategies_3_i
         
     
-    with open(log_dir + config_name + '/results_niter_2-{}.pickle'.format(trial), 'wb') as f:
-        cPickle.dump(results_niter_2, f)
+    with open(log_dir + config_name + '/results-{}.pickle'.format(trial), 'wb') as f:
+        cPickle.dump(dict(
+                          results_niter_2=results_niter_2,
+                          results_niter_3=results_niter_3,
+                          results_strategies_2=results_strategies_2,
+                          results_strategies_3=results_strategies_3
+                          ), f)
      
-    with open(log_dir + config_name + '/results_niter_3-{}.pickle'.format(trial), 'wb') as f:
-        cPickle.dump(results_niter_3, f)
-        
-    with open(log_dir + config_name + '/results_strategies_2-{}.pickle'.format(trial), 'wb') as f:
-        cPickle.dump(results_strategies_2, f)
-     
-    with open(log_dir + config_name + '/results_strategies_3-{}.pickle'.format(trial), 'wb') as f:
-        cPickle.dump(results_strategies_3, f)
      
     print "results_niter_2", results_niter_2
     print "results_niter_3", results_niter_3
