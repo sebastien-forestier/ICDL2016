@@ -110,26 +110,26 @@ elif mode == "first":
                 n_trials = 0
                 for trial in trials: 
                     try:
-                        first_2[config_name][age][problem] += results[config_name][trial]["results_strategies_2"][age][problem][0] == "hand"
+                        #first_2[config_name][age][problem] += results[config_name][trial]["results_strategies_2"][age][problem][0] == "hand"
                         first_3[config_name][age][problem] += results[config_name][trial]["results_strategies_3"][age][problem][0] == "hand"
                         n_trials += 1
                     except:
                         print "data not found for ", config_name, trial 
-                first_2[config_name][age][problem] = first_2[config_name][age][problem] / n_trials if n_trials > 0 else 0.
+                #first_2[config_name][age][problem] = first_2[config_name][age][problem] / n_trials if n_trials > 0 else 0.
                 first_3[config_name][age][problem] = first_3[config_name][age][problem] / n_trials if n_trials > 0 else 0.
-        
-        fig2, ax2 = plt.subplots()
-        fig2.canvas.set_window_title("Phase 2: " + config_name)
-        for age in ages:
-            ax2.plot([first_2[config_name][age][problem] for problem in problems], "o-", label=str(age))
-        
-        plt.title("Frequency of hand strategy as first attempt accross agents")
-        plt.legend()
-        plt.xlim([-0.5,2.5])
-        plt.ylim([0,1])
-        plt.xlabel("Problem")
-        plt.ylabel("F hand")
-        plt.xticks([0,1,2],problems)
+#         
+#         fig2, ax2 = plt.subplots()
+#         fig2.canvas.set_window_title("Phase 2: " + config_name)
+#         for age in ages:
+#             ax2.plot([first_2[config_name][age][problem] for problem in problems], "o-", label=str(age))
+#         
+#         plt.title("Frequency of hand strategy as first attempt accross agents")
+#         plt.legend()
+#         plt.xlim([-0.5,2.5])
+#         plt.ylim([0,1])
+#         plt.xlabel("Problem")
+#         plt.ylabel("F hand")
+#         plt.xticks([0,1,2],problems)
         
         fig3, ax3 = plt.subplots()
         fig3.canvas.set_window_title("Phase 3: " + config_name)
@@ -145,7 +145,7 @@ elif mode == "first":
         plt.xticks([0,1,2],problems)
         
         
-    print first_2
+    #print first_2
     print first_3
         
     plt.show(block=True)
@@ -190,12 +190,12 @@ elif mode == "success":
                 n_trials = 0
                 for trial in trials: 
                     try:
-                        success_2[config_name][age][problem] += results[config_name][trial]["results_niter_2"][age][problem] >= 0
+                        #success_2[config_name][age][problem] += results[config_name][trial]["results_niter_2"][age][problem] >= 0
                         success_3[config_name][age][problem] += results[config_name][trial]["results_niter_3"][age][problem] >= 0
                         n_trials += 1
                     except:
                         print "data not found for ", config_name, trial 
-                success_2[config_name][age][problem] = success_2[config_name][age][problem] / n_trials if n_trials > 0 else 0.
+                #success_2[config_name][age][problem] = success_2[config_name][age][problem] / n_trials if n_trials > 0 else 0.
                 success_3[config_name][age][problem] = success_3[config_name][age][problem] / n_trials if n_trials > 0 else 0.
         
 #         fig2, ax2 = plt.subplots()

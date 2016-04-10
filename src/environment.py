@@ -244,7 +244,7 @@ class ICCM2016Environment(DynamicEnvironment):
                           s_mins = [-2., -2.], # new pos
                           s_maxs = [2., 2.],
                           object_tol_hand = 0.2, 
-                          object_tol_tool = 0.05,
+                          object_tol_tool = 0.1,
                           bounds = np.array([[-0.5, -0.5],
                                                  [0.5, 0.5]]))
         
