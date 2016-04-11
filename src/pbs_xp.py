@@ -45,7 +45,7 @@ log_dir = '/scratch/sforestier001/logs/' + start_date + '-' + pool_name + '-'
 
 
 
-n_iter = 100
+n_iter = 1000
 iter_list = range(1,n_iter + 1) 
 
 
