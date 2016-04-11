@@ -315,9 +315,9 @@ class Supervisor(Observable):
                 interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
             else:
                 interests = [self.modules[pmid].interest() for pmid in possible_mids]
-            print "choose space child", interests
+            #print "choose space child", interests
             mid = possible_mids[greedy(interests, eps=eps)]
-            print "chosen mid", mid
+            #print "chosen mid", mid
             return mid
             
         elif mode == "interest_prop":  
@@ -325,9 +325,9 @@ class Supervisor(Observable):
                 interests = [self.modules[pmid].interest_pt(s) for pmid in possible_mids]
             else:
                 interests = [self.modules[pmid].interest() for pmid in possible_mids]
-            print "choose space child", interests
+            #print "choose space child", interests
             mid = possible_mids[prop_choice(interests, eps=eps)]
-            print "chosen mid", mid
+            #print "chosen mid", mid
             return mid
             
         elif mode == "random":   
