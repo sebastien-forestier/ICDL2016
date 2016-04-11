@@ -19,7 +19,7 @@ import scipy.stats
 ########################################################
 ################### PARAMS #############################
 ########################################################
-d = "2016-04-10_22-30-18-ICDL-xp1"
+d = "2016-04-11_15-04-42-ICDL-xp1"
 trials = range(1,101)
 problems = ["A", "B", "C"]
 ages = [1000, 2000, 5000, 10000]
@@ -342,30 +342,30 @@ elif mode == "waves":
             
             for trial in trials: 
             
-                if results[config_name][trial]["results_niter_2"][age]["A"] >= 0:
-                    p_success = "A"
-                elif results[config_name][trial]["results_niter_2"][age]["B"] >= 0:
-                    p_success = "B"
-                elif results[config_name][trial]["results_niter_2"][age]["C"] >= 0:
-                    p_success = "C"
-                else:
-                    p_success = "D"
-                    
-                if p_success == "A":
-                    for problem in ["B", "C"]:
-                        waves_2[config_name][age][1] += results[config_name][trial]["results_strategies_2"][age][problem]
-                elif p_success == "B":
-                    for problem in ["C"]:
-                        waves_2[config_name][age][1] += results[config_name][trial]["results_strategies_2"][age][problem]
-                    for problem in ["A"]:
-                        waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
-                elif p_success == "C":
-                    for problem in ["A", "B"]:
-                        waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
-                elif p_success == "D":
-                    for problem in ["A", "B", "C"]:
-                        waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
-                        
+#                 if results[config_name][trial]["results_niter_2"][age]["A"] >= 0:
+#                     p_success = "A"
+#                 elif results[config_name][trial]["results_niter_2"][age]["B"] >= 0:
+#                     p_success = "B"
+#                 elif results[config_name][trial]["results_niter_2"][age]["C"] >= 0:
+#                     p_success = "C"
+#                 else:
+#                     p_success = "D"
+#                     
+#                 if p_success == "A":
+#                     for problem in ["B", "C"]:
+#                         waves_2[config_name][age][1] += results[config_name][trial]["results_strategies_2"][age][problem]
+#                 elif p_success == "B":
+#                     for problem in ["C"]:
+#                         waves_2[config_name][age][1] += results[config_name][trial]["results_strategies_2"][age][problem]
+#                     for problem in ["A"]:
+#                         waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
+#                 elif p_success == "C":
+#                     for problem in ["A", "B"]:
+#                         waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
+#                 elif p_success == "D":
+#                     for problem in ["A", "B", "C"]:
+#                         waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
+#                         
                         
                 if results[config_name][trial]["results_niter_3"][age]["A"] >= 0:
                     p_success = "A"
@@ -392,13 +392,13 @@ elif mode == "waves":
                         waves_3[config_name][age][0] += results[config_name][trial]["results_strategies_3"][age][problem]
                         
 
-            waves_2[config_name][age][0] = -1. if len(waves_2[config_name][age][0]) == 0 else len([strat for strat in waves_2[config_name][age][0] if strat == "hand"]) / float(len(waves_2[config_name][age][0]))
-            waves_2[config_name][age][1] = -1. if len(waves_2[config_name][age][1]) == 0 else len([strat for strat in waves_2[config_name][age][1] if strat == "hand"]) / float(len(waves_2[config_name][age][1]))
+#             waves_2[config_name][age][0] = -1. if len(waves_2[config_name][age][0]) == 0 else len([strat for strat in waves_2[config_name][age][0] if strat == "hand"]) / float(len(waves_2[config_name][age][0]))
+#             waves_2[config_name][age][1] = -1. if len(waves_2[config_name][age][1]) == 0 else len([strat for strat in waves_2[config_name][age][1] if strat == "hand"]) / float(len(waves_2[config_name][age][1]))
             waves_3[config_name][age][0] = -1. if len(waves_3[config_name][age][0]) == 0 else len([strat for strat in waves_3[config_name][age][0] if strat == "hand"]) / float(len(waves_3[config_name][age][0]))
             waves_3[config_name][age][1] = -1. if len(waves_3[config_name][age][1]) == 0 else len([strat for strat in waves_3[config_name][age][1] if strat == "hand"]) / float(len(waves_3[config_name][age][1]))
             
         
-    print waves_2
+    #print waves_2
     print waves_3
         
     
