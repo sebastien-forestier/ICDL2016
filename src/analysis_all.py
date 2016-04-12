@@ -134,15 +134,20 @@ elif mode == "first":
         fig3, ax3 = plt.subplots()
         fig3.canvas.set_window_title("Phase 3: " + config_name)
         for age in ages:
-            ax3.plot([first_3[config_name][age][problem] for problem in problems], "o-", label=str(age))
+            ax3.plot([first_3[config_name][age][problem] for problem in problems], "o-", label=str(age), linewidth=5, markersize=12)
         
-        plt.title("Frequency of hand strategy as first attempt accross agents")
-        plt.legend()
-        plt.xlim([-0.5,2.5])
+        #plt.title("Frequency of hand strategy as first attempt accross agents")
+        plt.legend(prop={'size':26}, ncol=2)
+        plt.xlim([-0.2,2.2])
         plt.ylim([0,1])
-        plt.xlabel("Problem")
-        plt.ylabel("F hand")
+        plt.xlabel("Problem", fontsize = 26)
+        plt.ylabel("F hand", fontsize = 26)
         plt.xticks([0,1,2],problems)
+        plt.xticks(fontsize = 24)
+        plt.yticks(fontsize = 24)
+        
+        plt.savefig(log_dir + "img/" + config_name + '-first.pdf', format='pdf', bbox_inches='tight')
+        
         
         
     #print first_2
@@ -214,15 +219,18 @@ elif mode == "success":
         fig3, ax3 = plt.subplots()
         fig3.canvas.set_window_title("Phase 3: " + config_name)
         for age in ages:
-            ax3.plot([success_3[config_name][age][problem] for problem in problems], "o-", label=str(age))
+            ax3.plot([success_3[config_name][age][problem] for problem in problems], "o-", label=str(age), linewidth=5, markersize=12)
         
-        plt.title("Success rate to catch object, averaged accross agents")
-        plt.legend()
-        plt.xlim([-0.5,2.5])
+        #plt.title("Success rate to catch object, averaged accross agents")
+        plt.legend(prop={'size':26}, ncol=2)
+        plt.xlim([-0.2,2.2])
         plt.ylim([0,1])
-        plt.xlabel("Problem")
-        plt.ylabel("Success")
+        plt.xlabel("Problem", fontsize = 26)
+        plt.ylabel("Success", fontsize = 26)
         plt.xticks([0,1,2],problems)
+        plt.xticks(fontsize = 24)
+        plt.yticks(fontsize = 24)
+        plt.savefig(log_dir + "img/" + config_name + '-success.pdf', format='pdf', bbox_inches='tight')
         
         
     print success_2
@@ -270,12 +278,12 @@ elif mode == "all":
                 n_trials = 0
                 for trial in trials: 
                     try:
-                        all_2[config_name][age][problem] += len([strat for strat in results[config_name][trial]["results_strategies_2"][age][problem] if strat == "hand"]) / float(len(results[config_name][trial]["results_strategies_2"][age][problem]))
+                        #all_2[config_name][age][problem] += len([strat for strat in results[config_name][trial]["results_strategies_2"][age][problem] if strat == "hand"]) / float(len(results[config_name][trial]["results_strategies_2"][age][problem]))
                         all_3[config_name][age][problem] += len([strat for strat in results[config_name][trial]["results_strategies_3"][age][problem] if strat == "hand"]) / float(len(results[config_name][trial]["results_strategies_3"][age][problem]))
                         n_trials += 1
                     except:
                         print "data not found for ", config_name, trial 
-                all_2[config_name][age][problem] = all_2[config_name][age][problem] / n_trials if n_trials > 0 else 0.
+                #all_2[config_name][age][problem] = all_2[config_name][age][problem] / n_trials if n_trials > 0 else 0.
                 all_3[config_name][age][problem] = all_3[config_name][age][problem] / n_trials if n_trials > 0 else 0.
         
 #         fig2, ax2 = plt.subplots()
@@ -305,7 +313,7 @@ elif mode == "all":
         plt.xticks([0,1,2],problems)
         
         
-    print all_2
+    #print all_2
     print all_3
         
     plt.show(block=True)
@@ -367,14 +375,18 @@ elif mode == "waves":
 #                         waves_2[config_name][age][0] += results[config_name][trial]["results_strategies_2"][age][problem]
 #                         
                         
-                if results[config_name][trial]["results_niter_3"][age]["A"] >= 0:
-                    p_success = "A"
-                elif results[config_name][trial]["results_niter_3"][age]["B"] >= 0:
-                    p_success = "B"
-                elif results[config_name][trial]["results_niter_3"][age]["C"] >= 0:
-                    p_success = "C"
-                else:
-                    p_success = "D"
+                try:
+                    if results[config_name][trial]["results_niter_3"][age]["A"] >= 0:
+                        p_success = "A"
+                    elif results[config_name][trial]["results_niter_3"][age]["B"] >= 0:
+                        p_success = "B"
+                    elif results[config_name][trial]["results_niter_3"][age]["C"] >= 0:
+                        p_success = "C"
+                    else:
+                        p_success = "D"                    
+                except:
+                    print "data not found for ", config_name, trial
+                    continue
                     
                 if p_success == "A":
                     for problem in ["B", "C"]:
@@ -401,7 +413,21 @@ elif mode == "waves":
     #print waves_2
     print waves_3
         
-    
+    print "before"
+    for config_name in waves_3.keys():
+        print "\n   ", config_name, " & ",
+        for age in waves_3[config_name].keys():
+            print "%.2f" % waves_3[config_name][age][0],
+            print " & ",
+        
+    print 
+    print "after"
+    for config_name in waves_3.keys():
+        print "\n   ", config_name, " & ",
+        for age in waves_3[config_name].keys():
+            print "%.2f" % waves_3[config_name][age][1],
+            print " & ",
+        
 
 
 #     

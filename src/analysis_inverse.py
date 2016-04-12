@@ -110,7 +110,7 @@ def main(log_dir, config_name, trial):
                       C=[],
                       )
         
-        n_iter_max = 50
+        n_iter_max = 200
         
         
         # Reachable contexts, learning
