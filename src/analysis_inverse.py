@@ -46,7 +46,7 @@ def main(log_dir, config_name, trial):
         
         
         
-    iterations = [1000, 2000, 5000, 10000]
+    iterations = [1000, 5000, 10000, 20000, 50000]
     
     results_niter_2 = {}
     results_niter_3 = {}
