@@ -168,8 +168,8 @@ class DynamicEnvironment(Environment):
             plt.pause(0.0001)
             plt.cla()
             self.env.plot(self.ax, i, **kwargs)
-            plt.xlim([-1.6, 1.6])
-            plt.ylim([-0.5, 1.6])
+            plt.xlim([-1.3, 1.3])
+            plt.ylim([-1.3, 1.3])
 #             plt.xlim([-1.3, 1.3])
 #             plt.ylim([-0.2, 1.6])
 #             plt.xlim([-1.6, 1.6])
@@ -184,7 +184,7 @@ class DynamicEnvironment(Environment):
             plt.show(block=False)
             if False:
                 if i in [16, 32, 49]:
-                    plt.savefig('/home/sforesti/scm/PhD/iros2016/include/test-mvt-' + str(i) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
+                    plt.savefig('/home/sforesti/scm/PhD/icdl2016/include/test-mvt-' + str(i) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
         #plt.show()
         #time.sleep(1)
         
