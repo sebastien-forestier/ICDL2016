@@ -68,7 +68,7 @@ def main(log_dir, config_name, trial):
         fig, ax = plt.subplots()
         fig.canvas.set_window_title("Age " + str(iteration))
         
-        pcol = plt.pcolormesh(x_points, y_points, results[iteration], vmin=0, vmax=1, linewidth=0, cmap="magma")  
+        pcol = plt.pcolormesh(x_points, y_points, results[iteration], vmin=0, vmax=1, linewidth=0, cmap="jet")  
         pcol.set_rasterized(True)      
         pcol.set_edgecolor('face')
         
