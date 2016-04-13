@@ -268,7 +268,7 @@ class Supervisor(Observable):
             return "mod3" if obj_moved else None
               
         
-    def choose_space_child(self, s_space, s, mode="competence", local="local"):
+    def choose_space_child(self, s_space, s, mode="competence", local="local", k=1):
         """ 
         Choose the children of space s_space among modules that have
         the good sensori spaces, maximizing competence.
@@ -293,9 +293,13 @@ class Supervisor(Observable):
             else:
                 competences = [self.modules[pmid].competence() for pmid in possible_mids]
             #print "choose space child", competences
-            mid = possible_mids[greedy(competences, eps)]
-            #print "chosen mid", mid
-            return mid
+            if k == 1:
+                mid = possible_mids[greedy(competences, eps)]
+                #print "chosen mid", mid
+                return mid
+            else:
+                mid = possible_mids[greedy(competences)]
+                return [(1. - (eps/2.) if pmid == mid else eps/2.) for pmid in possible_mids]
         
         if mode == "competence_prop":
             if local:
@@ -307,8 +311,13 @@ class Supervisor(Observable):
 #                 print "sm db n points", [len(self.modules[mid].sensorimotor_model.model.imodel.fmodel.dataset) for mid in self.modules.keys()]
             else:
                 competences = [self.modules[pmid].competence() for pmid in possible_mids]
-            mid = possible_mids[prop_choice(competences, eps)]
-            return mid
+            if k == 1:
+                mid = possible_mids[prop_choice(competences, eps)]
+                return mid
+            else:
+                rectified = 1. / np.array(competences)
+                probas = rectified / np.sum(rectified)
+                return ((1. - eps) * probas + eps/2.)
             
         elif mode == "interest":  
             if local=="local":
@@ -316,9 +325,13 @@ class Supervisor(Observable):
             else:
                 interests = [self.modules[pmid].interest() for pmid in possible_mids]
             #print "choose space child", interests
-            mid = possible_mids[greedy(interests, eps=eps)]
-            #print "chosen mid", mid
-            return mid
+            if k == 1:
+                mid = possible_mids[greedy(interests, eps=eps)]
+                #print "chosen mid", mid
+                return mid
+            else:
+                mid = possible_mids[greedy(interests)]
+                return [(1. - (eps/2.) if pmid == mid else eps/2.) for pmid in possible_mids]
             
         elif mode == "interest_prop":  
             if local=="local":
@@ -326,9 +339,12 @@ class Supervisor(Observable):
             else:
                 interests = [self.modules[pmid].interest() for pmid in possible_mids]
             #print "choose space child", interests
-            mid = possible_mids[prop_choice(interests, eps=eps)]
-            #print "chosen mid", mid
-            return mid
+            if k == 1:
+                mid = possible_mids[prop_choice(interests, eps=eps)]
+                #print "chosen mid", mid
+                return mid
+            else:
+                return ((1. - eps) * (np.array(interests) / np.sum(interests)) + eps/2.)
             
         elif mode == "random":   
             mid = np.random.choice(possible_mids)
