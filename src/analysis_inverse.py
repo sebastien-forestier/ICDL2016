@@ -160,9 +160,9 @@ def main(log_dir, config_name, trial):
             for i in range(n_iter_max):
                 context = xp.env.get_current_context()
                 m = xp.ag.inverse(s_space, sg, context=context, babbling=True, explore=None)[0]
-                print "m", m
+                #print "m", m
                 sr = xp.env.update(m, reset=False)
-                print "s", sr
+                #print "s", sr
                 xp.ag.perceive([sr], context=context)
                 results_strategies_3_i[p3].append(strategy_used(sr))
                 if abs(sr[-1]) > 0.0001:

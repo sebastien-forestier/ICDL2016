@@ -13,16 +13,16 @@ from explauto.environment.environment import Environment
 from explauto.environment.simple_arm.simple_arm import joint_positions
 from explauto.utils.utils import rand_bounds
 
-# import brewer2mpl
-# bmap = brewer2mpl.get_map('Dark2', 'qualitative', 6)
-# colors = bmap.mpl_colors
-#  
-# colors_config = {
-#                  "stick":colors[3],
-#                  "gripper":colors[1],
-#                  "magnetic":colors[2],
-#                  "scratch":colors[4],
-#                  }
+import brewer2mpl
+bmap = brewer2mpl.get_map('Dark2', 'qualitative', 6)
+colors = bmap.mpl_colors
+  
+colors_config = {
+                 "stick":colors[3],
+                 "gripper":colors[1],
+                 "magnetic":colors[2],
+                 "scratch":colors[4],
+                 }
 
 class ArmEnvironment(Environment):
     use_process = True
@@ -184,7 +184,7 @@ class Object(Environment):
 
 
 
-class ICCM2016Environment(DynamicEnvironment):
+class ICDL2016Environment(DynamicEnvironment):
     def __init__(self, move_steps=50, max_params=None, noise=0, gui=False):
 
             

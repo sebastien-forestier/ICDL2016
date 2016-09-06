@@ -49,6 +49,7 @@ class ToolsExperiment(Experiment):
             
 #         self.ag.subscribe('agentM', self)
 #         self.ag.subscribe('agentS', self)
+        self.ag.subscribe('interests', self)
         self.ag.subscribe('babbling_module', self)
         self.ag.subscribe_topics_mids(['interest', 'competence', 'chidren_choice', 'im_update'], self)
         self.ag.subscribe_topics_mods(['im_update'], self)

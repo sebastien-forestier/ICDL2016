@@ -3,7 +3,7 @@ import numpy as np
 from explauto.utils.config import make_configuration
 from explauto.sensorimotor_model.non_parametric import NonParametric, ContextNonParametric
 from supervisor import Supervisor
-from environment import ICCM2016Environment
+from environment import ICDL2016Environment
 from explauto.environment.context_environment import ContextEnvironment
 from explauto.interest_model.random import MiscRandomInterest, ContextRandomInterest, competence_dist, competence_exp
 
@@ -37,7 +37,7 @@ class Config(object):
         self.n_eval = 0
         self.eval_modes = []
         
-        self.gui = False
+        self.gui = True
         
         self.hierarchy_type = hierarchy_type
         self.babbling_name = babbling_name
@@ -295,7 +295,7 @@ class Config(object):
 
 
         self.env_cls = ContextEnvironment
-        self.env_cfg = dict(env_cls=ICCM2016Environment, 
+        self.env_cfg = dict(env_cls=ICDL2016Environment, 
                             env_conf=iccm_conf, 
                             context_mode=self.context_mode)
         
@@ -322,7 +322,7 @@ configs = {}
 
 #################### EXPERIMENT  ####################
 
-iterations = 50000
+iterations = 10000
 
 config_list = {"xp1":[#"F-RmB",
                       #"F-RGB",

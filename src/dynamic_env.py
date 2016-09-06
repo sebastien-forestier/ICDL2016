@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-#matplotlib.use('QT4Agg')
 
 from dmp import DmpPrimitive
 from explauto.utils.utils import bounds_min_max
@@ -32,6 +31,7 @@ class DynamicEnvironment(Environment):
         self.optim_initial_position = optim_initial_position
         self.optim_end_position = optim_end_position
         self.gui = gui
+        self.n_mvt = 1
         if self.gui:
             plt.ion()
             self.ax = plt.subplot()
@@ -149,43 +149,18 @@ class DynamicEnvironment(Environment):
         return s
         
     def plot(self, **kwargs):
-#         l = [0, 16, 32, 49]
-#         for i in range(1,len(l)):
-#             plt.cla()
-#             for j in range(l[i-1]+1, l[i]-1, 5):
-#                 self.env.plot(self.ax, j, alpha=0.2)
-#             self.env.plot(self.ax, l[i], **kwargs)
-#             plt.xlim([-1.6, 1.6])
-#             plt.ylim([-0.2, 1.6])
-#             self.ax.set_xticklabels([])
-#             self.ax.set_yticklabels([])
-#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
-#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
-#             plt.draw()
-#             if False:
-#                 plt.savefig('/home/sforesti/scm/PhD/cogsci2016/include/test-mvt-' + str(l[i]) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
-        for i in range(self.move_steps):
-            plt.pause(0.0001)
-            plt.cla()
-            self.env.plot(self.ax, i, **kwargs)
-            plt.xlim([-1.3, 1.3])
-            plt.ylim([-1.3, 1.3])
-#             plt.xlim([-1.3, 1.3])
-#             plt.ylim([-0.2, 1.6])
-#             plt.xlim([-1.6, 1.6])
-#             plt.ylim([-0.5, 1.6])
-#             plt.gca().set_xticklabels([])
-#             plt.gca().set_yticklabels([])
-#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
-#             plt.gca().yaxis.set_major_locator(plt.NullLocator())
-#             plt.xlabel("")
-#             plt.ylabel("")
-            plt.draw()
-            plt.show(block=False)
-            if False:
-                if i in [16, 32, 49]:
-                    plt.savefig('/home/sforesti/scm/PhD/icdl2016/include/test-mvt-' + str(i) + '.pdf', format='pdf', dpi=1000, bbox_inches='tight')
-        #plt.show()
-        #time.sleep(1)
+        #if self.n_mvt < 100 or ((self.n_mvt-100) % 1000) >= 900:
+        if True:
+            for i in range(self.move_steps):
+                plt.pause(0.0001)
+                plt.cla()
+                self.env.plot(self.ax, i, **kwargs)
+                plt.xlim([-1.3, 1.3])
+                plt.ylim([-1.3, 1.3])
+                plt.draw()
+                plt.show(block=False)
+                if False:
+                    plt.savefig('/data/ICDL2016/image_phase2/mvt-' + str(self.n_mvt) + "-" + '{0:02d}'.format(i) + '.jpg', format='jpg', dpi=100, bbox_inches='tight')
+        self.n_mvt = self.n_mvt + 1
         
 

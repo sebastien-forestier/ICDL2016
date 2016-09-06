@@ -79,6 +79,8 @@ class Supervisor(Observable):
             elif s_space == "s_o":
                 interests[s_space] = np.sum([self.modules[mid].interest() for mid in ["mod3", "mod4"]])
         
+        self.emit('interests', [self.t, interests])
+        
         if mode == 'random':
             s_space = np.random.choice(self.interests.keys())
         elif mode == 'greedy':
