@@ -6,7 +6,7 @@ We provide source code of the experiments (Licence GPLv3), and data analysis.
 We do not provide data as it is too large, but we explain how to re-generate it.
 
 ## Paper
-Here is the ICDL [paper](http://sforestier.com/sites/default/files/Forestier2016Overlapping.pdf).
+Here is the ICDL [paper](https://hal.archives-ouvertes.fr/hal-01384562/file/Forestier2016Overlapping.pdf).
 ## Video 
 Here is a [video](https://www.youtube.com/watch?v=o5ARhTA8cfg) of the setup. 
 
